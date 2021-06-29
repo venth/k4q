@@ -5,12 +5,14 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
+	"github.com/venth/kaf/cmd/kaf/commands"
 )
 
 func main() {
 	app := &cli.App{
 		Name: "kaf - Kafka Command Line client",
 		Action: cli.ShowAppHelp,
+		Commands: commands.Registered(),
 	}
 
 	err := app.Run(os.Args)
