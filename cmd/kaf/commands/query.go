@@ -28,7 +28,7 @@ func newQueryKey() *cli.Command {
 			{
 				Category:  "Query operation",
 				Name:      "eq",
-				ArgsUsage: "<value>",
+				ArgsUsage: "<value> <topic1> .. [topicN]",
 			},
 		},
 	}

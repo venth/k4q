@@ -10,7 +10,7 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name: "kaf - Kafka Command Line client",
+		Name: "kaf",
 		Action: cli.ShowAppHelp,
 		Commands: commands.Registered(),
 	}
