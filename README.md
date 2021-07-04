@@ -11,13 +11,6 @@ write my own tool.
 
 # Acknowledges
 ## HowTos
-- [project's structure](https://bencane.com/2020/12/29/how-to-structure-a-golang-cli-project/)
-- [version go application](https://www.forkingbytes.com/blog/dynamic-versioning-your-go-application/)
-- [golang functional programming](https://ani.dev/2021/05/25/functional-programming-in-go-with-generics/)
-- [golang ultimate makefile](https://gist.github.com/thomaspoignant/5b72d579bd5f311904d973652180c705)
+- [project's layout](https://doc.rust-lang.org/cargo/guide/project-layout.html)
 ## Libraries
-- [kafka-go](https://github.com/segmentio/kafka-go) - used to communication with kafka
-- [clean env](https://github.com/ilyakaznacheev/cleanenv) - configuration management
-- [urfave/cli](https://github.com/urfave/cli) - ease parsing & handling command line arguments
-- [pneumatic](https://github.com/achannarasappa/pneumatic) - functional style in go
-
+- [clap](https://github.com/clap-rs/clap) - provides good use & fill for the command line 
