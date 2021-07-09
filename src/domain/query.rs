@@ -24,11 +24,11 @@ pub fn key_equals_value(value: KeyValue) -> impl Criteria {
     CriteriaKeyEqualsValue { key: value }
 }
 
-pub fn using<'a>(criteria: impl Criteria + 'static, topics: Vec<&str>) -> Box<dyn Action + 'a> {
-    Box::new(QueryAction {
+pub fn using<'a>(criteria: impl Criteria + 'static, topics: Vec<&str>) -> impl Action + 'a {
+    QueryAction {
         criteria: Box::from(criteria),
         topics: topics.iter().map(|e| String::from(*e)).collect(),
-    })
+    }
 }
 
 struct QueryAction {
