@@ -13,4 +13,5 @@ write my own tool.
 ## HowTos
 - [project's layout](https://doc.rust-lang.org/cargo/guide/project-layout.html)
 ## Libraries
-- [clap](https://github.com/clap-rs/clap) - provides good use & fill for the command line 
+- [clap](https://github.com/clap-rs/clap) - provides good use & fill for the command line
+- [mitsuhiko/indicatif](https://github.com/mitsuhiko/indicatif) - rendering progress bar and found records
