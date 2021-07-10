@@ -14,8 +14,8 @@ pub struct KeyValue {
     value: String,
 }
 
-impl KeyValue {
-    pub fn from(value: &str) -> Self {
+impl From<&str> for KeyValue {
+    fn from(value: &str) -> Self {
         Self { value: String::from(value) }
     }
 }
@@ -33,12 +33,12 @@ pub fn using<'a>(criteria: impl Criteria + 'static, topics: Vec<&str>) -> impl A
 
 struct QueryAction {
     criteria: Box<dyn Criteria>,
-    topics: Vec<String>
+    topics: Vec<String>,
 }
 
 impl Action for QueryAction {
     fn execute<'a>(&self) -> Box<dyn Iterator<Item=Record> + 'a> {
-        let _ = self.criteria.test(&Record{});
+        let _ = self.criteria.test(&Record {});
         Box::new(std::iter::empty::<Record>())
     }
 }
