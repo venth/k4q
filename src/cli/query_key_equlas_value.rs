@@ -1,10 +1,11 @@
+use std::iter::FromIterator;
+
 use clap::ArgMatches;
 
-use domain::query::KeyValue;
+use domain::record::KeyValue;
 
 use crate::domain;
 use crate::domain::query;
-use std::iter::FromIterator;
 
 pub fn matches(matched: &ArgMatches) -> Option<impl query::Action> {
     let query_topics = matched
