@@ -1,11 +1,6 @@
-use crate::domain::query::Action;
+use crate::domain::action::Action;
+use crate::domain::port::ActionRecognizer;
 
 mod cli_configuration;
-mod query_key_equlas_value;
-
-pub fn parse<'a>() -> Option<impl Action + 'a> {
-    let matched = cli_configuration::app()
-        .get_matches();
-
-    query_key_equlas_value::matches(&matched)
-}
+pub mod port_action_recognizer;
+mod query_matcher;
