@@ -1,8 +1,8 @@
-pub trait Action<'a> {
+pub trait Action {
     fn execute(&self);
 }
 
-pub fn no_op<'a>() -> impl Action<'a> {
+pub fn no_op() -> impl Action {
     NoOpAction {}
 }
 
@@ -10,6 +10,6 @@ struct NoOpAction {
 
 }
 
-impl<'a> Action<'a> for NoOpAction {
+impl Action for NoOpAction {
     fn execute(&self) {}
 }

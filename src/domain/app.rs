@@ -1,18 +1,18 @@
 use crate::domain::action;
 use crate::domain::port::ActionRecognizer;
 
-pub fn new<'dep, 'a>(action_recognizer: &'dep impl ActionRecognizer<'a>) -> App<'dep, 'a> {
+pub fn new(action_recognizer: &impl ActionRecognizer) -> App {
     App {
         action_recognizer,
     }
 }
 
-pub struct App<'dep, 'a> {
-    action_recognizer: &'dep dyn ActionRecognizer<'a>,
+pub struct App<'dep> {
+    action_recognizer: &'dep dyn ActionRecognizer,
 }
 
-impl<'dep, 'a> App<'dep, 'a> {
-    pub fn run<'b>(&self, args: &'b Vec<&'b str>) {
+impl<'dep> App<'dep> {
+    pub fn run<'a>(&self, args: &'a Vec<&'a str>) {
         self.action_recognizer
             .recognize(&args)
             .unwrap_or(Box::new(action::no_op()))
