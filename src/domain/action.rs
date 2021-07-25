@@ -1,38 +1,15 @@
-use crate::domain::criteria::Criteria;
-use crate::domain::record::Record;
-
-pub(crate) fn empty(message: String) -> Box<dyn Action> {
-    Box::new(EmptyAction { message })
+pub trait Action<'a> {
+    fn execute(&self);
 }
 
-pub trait Action {
-    fn execute(&self) -> Box<dyn Iterator<Item=Record>>;
+pub fn no_op<'a>() -> impl Action<'a> {
+    NoOpAction {}
 }
 
-pub trait ActionFactory {
-    fn using(&self, criteria: Box<dyn Criteria>, topics: Vec<&str>) -> Box<dyn Action>;
+struct NoOpAction {
+
 }
 
-impl Action for Box<dyn Action> {
-    fn execute(&self) -> Box<dyn Iterator<Item=Record>> {
-        self.as_ref().execute()
-    }
-}
-
-impl Action for EmptyAction {
-    fn execute(&self) -> Box<dyn Iterator<Item=Record>> {
-        println!("{}", self.message);
-        Box::new(std::iter::empty())
-    }
-}
-
-impl Action for Box<EmptyAction> {
-    fn execute(&self) -> Box<dyn Iterator<Item=Record>> {
-        self.as_ref().execute()
-    }
-}
-
-#[derive(Debug)]
-struct EmptyAction {
-    message: String,
+impl<'a> Action<'a> for NoOpAction {
+    fn execute(&self) {}
 }

@@ -1,31 +1,22 @@
-use crate::cli;
 use crate::domain::action;
-use crate::domain::action::Action;
 use crate::domain::port::ActionRecognizer;
-use crate::domain::record::Record;
 
-pub fn new(action_recognizer: Box<dyn ActionRecognizer>) -> Box<App> {
-    Box::new(App {
-        action_recognizer: Box::new(action_recognizer)
-    })
-}
-
-impl ActionRecognizer for App {
-    fn recognize(&self, args: &Vec<&str>) -> Option<Box<dyn Action>> {
-        self.action_recognizer.recognize(args)
+pub fn new<'dep, 'a>(action_recognizer: &'dep impl ActionRecognizer<'a>) -> App<'dep, 'a> {
+    App {
+        action_recognizer,
     }
 }
 
-pub struct App {
-    action_recognizer: Box<dyn ActionRecognizer>,
+pub struct App<'dep, 'a> {
+    action_recognizer: &'dep dyn ActionRecognizer<'a>,
 }
 
-impl App {
-    pub fn run(&self, args: &Vec<&str>) {
-        self
-            .recognize(args)
-            .unwrap_or(action::empty(format!("Unsupported action for: {:?}", args)))
-            .execute()
-            .for_each(|rec| println!("Found record => {:?}", rec));
+impl<'dep, 'a> App<'dep, 'a> {
+    pub fn run<'b>(&self, args: &'b Vec<&'b str>) {
+        self.action_recognizer
+            .recognize(&args)
+            .unwrap_or(Box::new(action::no_op()))
+            .as_ref()
+            .execute();
     }
 }
