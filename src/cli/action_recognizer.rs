@@ -1,15 +1,15 @@
+use shaku;
+use shaku::Component;
+
 use crate::domain::action::Action;
 use crate::domain::port::ActionRecognizer;
 
-pub fn new() -> impl ActionRecognizer {
-    CliActionRecognizer {}
-}
-
-struct CliActionRecognizer {
-}
+#[derive(Component)]
+#[shaku(interface = ActionRecognizer)]
+pub struct CliActionRecognizer {}
 
 impl ActionRecognizer for CliActionRecognizer {
-    fn recognize<'a>(&self, args: &'a Vec<&'a str>) -> Option<Box<dyn Action +'a>> {
+    fn recognize<'a>(&self, args: &'a Vec<&'a str>) -> Option<Box<dyn Action + 'a>> {
         Some(Box::new(DummyAction { args }))
     }
 }
