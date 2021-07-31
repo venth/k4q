@@ -22,3 +22,6 @@ pub trait CommandRecognizer: Interface {
     fn recognize(&self, args: &Vec<&str>) -> Option<Command>;
 }
 
+pub trait ErrorNotifier: Interface {
+    fn notify(&self, message: &str);
+}

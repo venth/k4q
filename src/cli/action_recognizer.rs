@@ -6,7 +6,7 @@ use shaku::Component;
 use crate::cli::action_selector::ActionSelector;
 use crate::cli::cli_parser::CliParserFactory;
 use crate::domain::action::Action;
-use crate::domain::port::ActionRecognizer;
+use crate::domain::ports::ActionRecognizer;
 use crate::domain::service::ActionFactory;
 
 #[derive(Component)]

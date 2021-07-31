@@ -7,7 +7,7 @@ use shaku::Component;
 
 use crate::domain::action::Action;
 use crate::domain::criteria::Criteria;
-use crate::domain::port::RecordFinder;
+use crate::domain::ports::RecordFinder;
 use crate::domain::record::{KeyValue, Record};
 use crate::domain::service::ActionFactory;
 

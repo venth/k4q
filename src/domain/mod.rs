@@ -4,7 +4,7 @@ use shaku::{HasComponent, module, ModuleInterface};
 
 use crate::domain::service::ActionFactory;
 
-pub(crate) mod port;
+pub(crate) mod ports;
 pub(crate) mod action;
 pub(crate) mod service;
 mod app;
@@ -14,9 +14,11 @@ pub(crate) mod query;
 pub(crate) mod command;
 
 
-pub trait CliModule: HasComponent<dyn port::ActionRecognizer> + HasComponent<dyn port::CommandRecognizer> {}
+pub trait CliModule: HasComponent<dyn ports::ActionRecognizer> + HasComponent<dyn ports::CommandRecognizer> {}
 
-pub trait KafkaModule: HasComponent<dyn port::RecordFinder> {}
+pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> {}
+
+pub trait ConsoleModule: HasComponent<dyn ports::ErrorNotifier> {}
 
 pub trait Module: HasComponent<dyn service::App> {}
 
@@ -26,18 +28,25 @@ module! {
         providers = [],
 
         use CliModule {
-            components = [port::ActionRecognizer, port::CommandRecognizer],
+            components = [ports::ActionRecognizer, ports::CommandRecognizer],
             providers = [],
         },
 
         use KafkaModule {
-            components = [port::RecordFinder],
+            components = [ports::RecordFinder],
             providers = [],
+        },
+
+        use ConsoleModule {
+            components = [ports::ErrorNotifier],
+            providers = []
         },
     }
 }
 
-pub fn module(cli_module: Arc<dyn CliModule>, kafka_module: Arc<dyn KafkaModule>) -> Arc<dyn Module> {
-    Arc::new(DomainModule::builder(cli_module, kafka_module)
+pub fn module(cli_module: Arc<dyn CliModule>,
+              kafka_module: Arc<dyn KafkaModule>,
+              console_module: Arc<dyn ConsoleModule>) -> Arc<dyn Module> {
+    Arc::new(DomainModule::builder(cli_module, kafka_module, console_module)
         .build())
 }

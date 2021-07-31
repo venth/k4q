@@ -2,13 +2,13 @@ use shaku;
 use shaku::Component;
 
 use crate::domain::command::Command;
-use crate::domain::port;
+use crate::domain::ports;
 
 #[derive(Component)]
-#[shaku(interface = port::CommandRecognizer)]
+#[shaku(interface = ports::CommandRecognizer)]
 pub struct CliCommandRecognizer {}
 
-impl port::CommandRecognizer for CliCommandRecognizer {
+impl ports::CommandRecognizer for CliCommandRecognizer {
     fn recognize(&self, args: &Vec<&str>) -> Option<Command> {
         todo!()
     }

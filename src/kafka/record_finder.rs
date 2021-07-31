@@ -1,7 +1,7 @@
 use shaku::Component;
 
 use crate::domain::criteria::Criteria;
-use crate::domain::port::RecordFinder;
+use crate::domain::ports::RecordFinder;
 use crate::domain::record::Record;
 
 impl RecordFinder for KafkaRecordFinder {
