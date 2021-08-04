@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use shaku::{HasComponent, module, ModuleInterface};
-
-use crate::domain::service::ActionFactory;
+use shaku::{HasComponent, module};
 
 pub(crate) mod ports;
 pub(crate) mod action;

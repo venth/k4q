@@ -1,5 +1,3 @@
-use std::fmt::{Display, Formatter};
-
 #[derive(Debug)]
 pub struct Record {
     topic_name: TopicName,

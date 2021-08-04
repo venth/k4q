@@ -1,8 +1,3 @@
-use shaku::Interface;
-
-use crate::domain::criteria::Criteria;
-use crate::domain::record::Record;
-
 pub trait Action {
     fn execute(&self);
 }
@@ -19,9 +14,7 @@ pub fn no_op() -> impl Action {
 }
 
 #[derive(Debug)]
-struct NoOpAction {
-
-}
+struct NoOpAction {}
 
 impl Action for NoOpAction {
     fn execute(&self) {}

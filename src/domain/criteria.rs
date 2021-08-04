@@ -1,4 +1,3 @@
-use crate::domain::action::Action;
 use crate::domain::record::{KeyValue, Record};
 
 pub trait Criteria {

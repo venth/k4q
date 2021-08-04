@@ -1,5 +1,3 @@
-use shaku::HasComponent;
-
 mod domain;
 mod cli;
 mod kafka;

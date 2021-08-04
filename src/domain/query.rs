@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-use std::ops::Deref;
 use std::sync::Arc;
 
 use shaku;
@@ -8,7 +6,6 @@ use shaku::Component;
 use crate::domain::action::Action;
 use crate::domain::criteria::Criteria;
 use crate::domain::ports::RecordFinder;
-use crate::domain::record::{KeyValue, Record};
 use crate::domain::service::ActionFactory;
 
 impl ActionFactory for QueryActionFactory {
