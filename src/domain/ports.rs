@@ -6,7 +6,7 @@ use crate::domain::model::Record;
 
 pub trait RecordFinder: Interface {
     fn find_by<'a>(&self, topics: &'a Vec<String>,
-                   criteria: &'a dyn Criteria) -> &'a dyn Iterator<Item=Record>;
+                   criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>>;
 }
 
 pub trait CommandRecognizer: Interface {

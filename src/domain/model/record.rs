@@ -63,7 +63,7 @@ impl From<&i64> for Offset {
 }
 
 impl Record {
-    fn new(
+    pub fn of(
         topic: TopicName,
         key: KeyValue,
         partition: Partition,
