@@ -1,7 +1,7 @@
 use shaku::Interface;
 
 use crate::domain::action::Action;
-use crate::domain::criteria::Criteria;
+use crate::domain::model::Criteria;
 
 pub trait App: Interface {
     fn run<'a>(&self, args: &'a Vec<&'a str>);

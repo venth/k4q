@@ -6,13 +6,11 @@ pub(crate) mod ports;
 pub(crate) mod action;
 pub(crate) mod service;
 mod app;
-pub(crate) mod criteria;
-pub(crate) mod record;
 pub(crate) mod query;
-pub(crate) mod command;
+pub(crate) mod model;
 
 
-pub trait CliModule: HasComponent<dyn ports::ActionRecognizer> + HasComponent<dyn ports::CommandRecognizer> {}
+pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> {}
 
 pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> {}
 
@@ -26,7 +24,7 @@ module! {
         providers = [],
 
         use CliModule {
-            components = [ports::ActionRecognizer, ports::CommandRecognizer],
+            components = [ports::CommandRecognizer],
             providers = [],
         },
 

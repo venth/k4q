@@ -1,4 +1,4 @@
-use crate::domain::record::{KeyValue, Record};
+use crate::domain::model::{KeyValue, Record};
 
 pub trait Criteria {
     fn test(&self, rec: &Record) -> bool;

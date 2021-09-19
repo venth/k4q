@@ -1,18 +1,12 @@
 use shaku::Interface;
 
-use crate::domain::action::Action;
-use crate::domain::command::Command;
-use crate::domain::criteria::Criteria;
-use crate::domain::record::Record;
+use crate::domain::model::Command;
+use crate::domain::model::Criteria;
+use crate::domain::model::Record;
 
 pub trait RecordFinder: Interface {
     fn find_by<'a>(&self, topics: &'a Vec<String>,
                    criteria: &'a dyn Criteria) -> &'a dyn Iterator<Item=Record>;
-}
-
-pub trait ActionRecognizer: Interface {
-    fn recognize<'a>(&self,
-                     args: &'a Vec<&'a str>) -> Option<Box<dyn Action + 'a>>;
 }
 
 pub trait CommandRecognizer: Interface {

@@ -1,8 +1,8 @@
 use shaku::Component;
 
-use crate::domain::criteria::Criteria;
+use crate::domain::model::Criteria;
+use crate::domain::model::Record;
 use crate::domain::ports::RecordFinder;
-use crate::domain::record::Record;
 
 impl RecordFinder for KafkaRecordFinder {
     fn find_by<'a>(&self, topics: &'a Vec<String>, criteria: &'a dyn Criteria) -> &'a dyn Iterator<Item=Record> {

@@ -2,16 +2,12 @@ use std::sync::Arc;
 
 use shaku::Component;
 
-use crate::domain::action;
 use crate::domain::ports;
 use crate::domain::service;
 
 #[derive(Component)]
 #[shaku(interface = service::App)]
 pub struct AppImpl {
-    #[shaku(inject)]
-    action_recognizer: Arc<dyn ports::ActionRecognizer>,
-
     #[shaku(inject)]
     command_recognizer: Arc<dyn ports::CommandRecognizer>,
 }
@@ -22,10 +18,10 @@ impl service::App for AppImpl {
             .recognize(&args);
 
 
-        self.action_recognizer
+/*        self.action_recognizer
             .recognize(&args)
             .unwrap_or(Box::new(action::no_op()))
             .as_ref()
             .execute();
-    }
+*/    }
 }
