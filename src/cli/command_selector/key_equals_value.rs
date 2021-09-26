@@ -9,13 +9,16 @@ use crate::domain::model::{Command, ConfigurationSetup, KeyValue, TopicsMatcherT
 use crate::domain::model;
 
 impl CommandSelector for Matcher {
-    fn select_by<'a>(&self, matched: &'a ArgMatches) -> Option<Command<'a>> {
+    fn select_by<'a>(&self, matched: ArgMatches) -> Option<Command> {
         let kafka_config = ConfigurationSetup::default();
 
-        let query_topics = matched
+        let query_topics: Option<Vec<String>> = matched
             .subcommand_matches("query")
             .and_then(|m| m.values_of("topics"))
-            .map(|topics| Vec::from_iter(topics));
+            .map(|topics| Vec::from_iter(topics))
+            .map(Vec::into_iter)
+            .map(|topics| topics.map(ToString::to_string))
+            .map(|topics|topics.collect());
 
         let query_key_criteria = matched
             .subcommand_matches("query")

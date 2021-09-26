@@ -6,5 +6,5 @@ use crate::domain::model::Command;
 pub mod key_equals_value;
 
 pub trait CommandSelector: Interface {
-    fn select_by<'a>(&self, matched: &'a ArgMatches) -> Option<Command<'a>>;
+    fn select_by(&self, matched: ArgMatches) -> Option<Command>;
 }

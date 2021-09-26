@@ -4,6 +4,7 @@ use shaku;
 use shaku::Component;
 
 use crate::cli::cli_parser::CliParserFactory;
+use crate::cli::command_selector::CommandSelector;
 use crate::domain::model::Command;
 use crate::domain::ports;
 
@@ -12,6 +13,9 @@ use crate::domain::ports;
 pub struct CliCommandRecognizer {
     #[shaku(inject)]
     cli_parser: Arc<dyn CliParserFactory>,
+
+    #[shaku(inject)]
+    command_selector: Arc<dyn CommandSelector>,
 }
 
 impl ports::CommandRecognizer for CliCommandRecognizer {
@@ -19,10 +23,8 @@ impl ports::CommandRecognizer for CliCommandRecognizer {
         let parser = self.cli_parser.as_ref().create();
         let matched = parser.get_matches_from(args);
 
-        /*        self.action_selector
-                    .as_ref()
-                    .select_by(&matched)
-        */
-        None
+        self.command_selector
+            .as_ref()
+            .select_by(matched)
     }
 }

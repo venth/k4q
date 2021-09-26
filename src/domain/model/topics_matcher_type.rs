@@ -1,4 +1,4 @@
-pub enum TopicsMatcherType<'a> {
-    DIRECT(Vec<&'a str>),
-    REGEX(Vec<&'a str>),
+pub enum TopicsMatcherType {
+    DIRECT(Vec<String>),
+    REGEX(Vec<String>),
 }

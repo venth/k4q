@@ -19,6 +19,7 @@ impl Default for ConfigurationSetup {
     }
 }
 
-pub enum Command<'a> {
-    QueryByKey(Box<ConfigurationSetup>, TopicsMatcherType<'a>, Box<dyn Criteria>),
+pub enum Command {
+    QueryByKey(Box<ConfigurationSetup>, TopicsMatcherType, Box<dyn Criteria>),
+    CommandNotRecognized,
 }
