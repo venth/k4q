@@ -18,18 +18,8 @@ pub struct AppImpl {
 
 impl service::App for AppImpl {
     fn run<'a>(&self, args: &'a Vec<&'a str>) {
-        let cmd = self.command_recognizer
-            .recognize(&args)
-            .unwrap_or_else(||Command::CommandNotRecognized);
-
+        let cmd = self.command_of(&args);
         self.execute(cmd)
-
-        /*        self.action_recognizer
-                    .recognize(&args)
-                    .unwrap_or(Box::new(action::no_op()))
-                    .as_ref()
-                    .execute();
-        */
     }
 }
 
@@ -39,5 +29,11 @@ impl AppImpl {
             Command::QueryByKey(config, topicsMatcher, criteria) => {}
             Command::CommandNotRecognized => { self.error_notifier.notify("Command not found") }
         }
+    }
+
+    fn command_of(&self, args: &&Vec<&str>) -> Command {
+        self.command_recognizer
+            .recognize(&args)
+            .unwrap_or_else(|| Command::CommandNotRecognized)
     }
 }
