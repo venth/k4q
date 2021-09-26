@@ -5,7 +5,7 @@ use crate::domain::model::Record;
 use crate::domain::ports::RecordFinder;
 
 impl RecordFinder for KafkaRecordFinder {
-    fn find_by<'a>(&self, topics: &'a Vec<String>, criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>> {
+    fn find_by<'a>(&self, topics: Vec<&str>, criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>> {
         Box::new(vec![
             Record::of(
                 TopicName::from("topic name"),

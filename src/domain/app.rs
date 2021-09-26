@@ -13,7 +13,10 @@ pub struct AppImpl {
     command_recognizer: Arc<dyn ports::CommandRecognizer>,
 
     #[shaku(inject)]
-    error_notifier: Arc<dyn ports::ErrorNotifier>,
+    progress_notifier: Arc<dyn ports::ProgressNotifier>,
+
+    #[shaku(inject)]
+    record_finder: Arc<dyn ports::RecordFinder>,
 }
 
 impl service::App for AppImpl {
@@ -26,8 +29,14 @@ impl service::App for AppImpl {
 impl AppImpl {
     fn execute(&self, cmd: Command) {
         match cmd {
-            Command::QueryByKey(config, topicsMatcher, criteria) => {}
-            Command::CommandNotRecognized => { self.error_notifier.notify("Command not found") }
+            Command::QueryByKey(config, topicsMatcher, criteria) => {
+                let recs = self.record_finder
+                    .find_by(vec!{"123"}, &criteria);
+
+                recs.for_each(|rec| self.progress_notifier
+                    .notify(serde_json::to_string(&rec).unwrap_or("Ups".to_string()).as_str()))
+            }
+            Command::CommandNotRecognized => { self.progress_notifier.notify("Command not found") }
         }
     }
 

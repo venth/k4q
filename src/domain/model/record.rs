@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use serde;
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Record {
     topic_name: TopicName,
     key: KeyValue,
@@ -7,27 +9,27 @@ pub struct Record {
     payload: Payload,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct KeyValue {
     value: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Partition {
     value: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Offset {
     value: i64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TopicName {
     value: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Payload {
     value: String,
 }

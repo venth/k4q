@@ -4,12 +4,12 @@ use shaku::module;
 
 use crate::domain;
 
-mod error_notifier;
+mod progress_notifier;
 
 module! {
     pub ConsoleModule: domain::ConsoleModule {
         components = [
-            error_notifier::ConsoleErrorNotifier,
+            progress_notifier::ConsoleErrorNotifier,
         ],
         providers = [],
     }

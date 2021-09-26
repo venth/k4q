@@ -285,6 +285,8 @@ dependencies = [
  "home",
  "predicates",
  "rdkafka",
+ "serde",
+ "serde_json",
  "shaku",
 ]
 

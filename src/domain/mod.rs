@@ -14,7 +14,7 @@ pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> {}
 
 pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> {}
 
-pub trait ConsoleModule: HasComponent<dyn ports::ErrorNotifier> {}
+pub trait ConsoleModule: HasComponent<dyn ports::ProgressNotifier> {}
 
 pub trait Module: HasComponent<dyn service::App> {}
 
@@ -34,7 +34,7 @@ module! {
         },
 
         use ConsoleModule {
-            components = [ports::ErrorNotifier],
+            components = [ports::ProgressNotifier],
             providers = []
         },
     }
