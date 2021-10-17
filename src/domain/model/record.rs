@@ -58,6 +58,18 @@ impl From<&String> for TopicName {
     }
 }
 
+impl From<&TopicName> for String {
+    fn from(t: &TopicName) -> Self {
+        t.value.clone()
+    }
+}
+
+impl Clone for TopicName {
+    fn clone(&self) -> Self {
+        TopicName { value: self.value.clone() }
+    }
+}
+
 impl From<&i32> for Partition {
     fn from(value: &i32) -> Self {
         Self { value: *value }

@@ -1,7 +1,10 @@
+use std::sync::Arc;
+
 use shaku::Interface;
 
 use crate::domain::model::{Command, TopicName, TopicsMatcherType};
 use crate::domain::model::Criteria;
+use crate::domain::model::Progress;
 use crate::domain::model::Record;
 
 pub trait RecordFinder: Interface {
@@ -16,6 +19,7 @@ pub trait CommandRecognizer: Interface {
 
 pub trait ProgressNotifier: Interface {
     fn notify(&self, message: &str);
+    fn start(&self) -> Arc<dyn Progress>;
 }
 
 pub trait TopicsFinder: Interface {
