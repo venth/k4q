@@ -4,6 +4,7 @@ use shaku::Component;
 
 use crate::domain::model::Command;
 use crate::domain::ports;
+use crate::domain::prepared_command::PreparedCommand;
 use crate::domain::service;
 
 #[derive(Component)]
@@ -13,36 +14,32 @@ pub struct AppImpl {
     command_recognizer: Arc<dyn ports::CommandRecognizer>,
 
     #[shaku(inject)]
-    progress_notifier: Arc<dyn ports::ProgressNotifier>,
+    record_finder: Arc<dyn ports::RecordFinder>,
 
     #[shaku(inject)]
-    record_finder: Arc<dyn ports::RecordFinder>,
+    progress_notifier: Arc<dyn ports::ProgressNotifier>,
 }
 
 impl service::App for AppImpl {
     fn run<'a>(&self, args: &'a Vec<&'a str>) {
-        let cmd = self.command_of(&args);
-        self.execute(cmd)
+        self.command_of(&args)
+            .execute();
     }
 }
 
 impl AppImpl {
-    fn execute(&self, cmd: Command) {
-        match cmd {
-            Command::QueryByKey(config, topicsMatcher, criteria) => {
-                let recs = self.record_finder
-                    .find_by(vec!{"123"}, &criteria);
-
-                recs.for_each(|rec| self.progress_notifier
-                    .notify(serde_json::to_string(&rec).unwrap_or("Ups".to_string()).as_str()))
-            }
-            Command::CommandNotRecognized => { self.progress_notifier.notify("Command not found") }
-        }
-    }
-
-    fn command_of(&self, args: &&Vec<&str>) -> Command {
+    fn command_of(&self, args: &&Vec<&str>) -> PreparedCommand {
         self.command_recognizer
             .recognize(&args)
-            .unwrap_or_else(|| Command::CommandNotRecognized)
+            .map(|cmd| PreparedCommand {
+                record_finder: self.record_finder.clone(),
+                progress_notifier: self.progress_notifier.clone(),
+                cmd,
+            })
+            .unwrap_or_else(|| PreparedCommand {
+                record_finder: self.record_finder.clone(),
+                progress_notifier: self.progress_notifier.clone(),
+                cmd: Command::CommandNotRecognized,
+            })
     }
 }

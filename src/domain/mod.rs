@@ -8,6 +8,7 @@ pub(crate) mod service;
 mod app;
 pub(crate) mod query;
 pub(crate) mod model;
+mod prepared_command;
 
 
 pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> {}
