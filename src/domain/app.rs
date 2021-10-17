@@ -17,6 +17,9 @@ pub struct AppImpl {
     record_finder: Arc<dyn ports::RecordFinder>,
 
     #[shaku(inject)]
+    topics_finder: Arc<dyn ports::TopicsFinder>,
+
+    #[shaku(inject)]
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
 }
 
@@ -34,11 +37,13 @@ impl AppImpl {
             .map(|cmd| PreparedCommand {
                 record_finder: self.record_finder.clone(),
                 progress_notifier: self.progress_notifier.clone(),
+                topics_finder: self.topics_finder.clone(),
                 cmd,
             })
             .unwrap_or_else(|| PreparedCommand {
                 record_finder: self.record_finder.clone(),
                 progress_notifier: self.progress_notifier.clone(),
+                topics_finder: self.topics_finder.clone(),
                 cmd: Command::CommandNotRecognized,
             })
     }

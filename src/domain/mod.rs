@@ -5,15 +5,15 @@ use shaku::{HasComponent, module};
 pub(crate) mod ports;
 pub(crate) mod action;
 pub(crate) mod service;
-mod app;
 pub(crate) mod query;
 pub(crate) mod model;
+mod app;
 mod prepared_command;
 
 
 pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> {}
 
-pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> {}
+pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> + HasComponent<dyn ports::TopicsFinder> {}
 
 pub trait ConsoleModule: HasComponent<dyn ports::ProgressNotifier> {}
 
@@ -30,7 +30,7 @@ module! {
         },
 
         use KafkaModule {
-            components = [ports::RecordFinder],
+            components = [ports::RecordFinder, ports::TopicsFinder],
             providers = [],
         },
 
