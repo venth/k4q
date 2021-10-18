@@ -1,3 +1,7 @@
+use std::pin::Pin;
+
+use futures::{Stream, StreamExt};
+use futures::stream;
 use shaku::Component;
 
 use crate::domain::model;
@@ -8,10 +12,13 @@ use crate::domain::ports;
 pub struct KafkaTopicsFinder {}
 
 impl ports::TopicsFinder for KafkaTopicsFinder {
-    fn find_by<'a>(&self, topics_matcher_type: &'a model::TopicsMatcherType) -> Box<dyn Iterator<Item=model::TopicName> + 'a> {
+    fn find_by<'a>(&self, topics_matcher_type: &'a model::TopicsMatcherType) -> Pin<Box<dyn Stream<Item=model::TopicName> + 'a>> {
         match topics_matcher_type {
-            model::TopicsMatcherType::DIRECT(topics) => { Box::new(topics.iter().map(model::TopicName::from)) }
-            _ => { Box::new(std::iter::empty::<model::TopicName>()) }
+            model::TopicsMatcherType::DIRECT(topics) => {
+                stream::iter(topics)
+                    .map(model::TopicName::from).boxed()
+            }
+            _ => { Box::pin(stream::empty::<model::TopicName>()) }
         }
     }
 }

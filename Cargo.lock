@@ -313,6 +313,7 @@ name = "kaf"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "futures",
  "home",
  "indicatif",
  "predicates",
@@ -320,7 +321,6 @@ dependencies = [
  "serde",
  "serde_json",
  "shaku",
- "tokio-stream",
 ]
 
 [[package]]
@@ -677,23 +677,12 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.8.1"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c8b05dc14c75ea83d63dd391100353789f5f24b8b3866542a5e85c8be8e985"
+checksum = "c2c2416fdedca8443ae44b4527de1ea633af61d8f7169ffa6e72c5b53d24efcc"
 dependencies = [
  "autocfg",
  "pin-project-lite",
-]
-
-[[package]]
-name = "tokio-stream"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b2f3f698253f03119ac0102beaa64f67a67e08074d03a22d18784104543727f"
-dependencies = [
- "futures-core",
- "pin-project-lite",
- "tokio",
 ]
 
 [[package]]

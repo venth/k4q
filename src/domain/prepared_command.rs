@@ -1,7 +1,9 @@
+use std::pin::Pin;
 use std::sync::Arc;
 
-use crate::domain::model::{Command, Criteria, Progress, Record, TopicsMatcherType};
-use crate::domain::model::TopicName;
+use futures::{future, stream, Stream, StreamExt};
+
+use crate::domain::model::{Command, Criteria, Progress, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
@@ -24,12 +26,17 @@ impl PreparedCommand {
     }
 
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
-        self.topics_finder
+        let t = self.topics_finder
             .find_by(topics_matcher)
             .map(|topic_name| TopicQuery::new(topic_name, self.progress_notifier.start()))
             .map(|query| query.resulted_with(self.record_finder.find_by(&query.topic_name)))
             .flat_map(|result| result.to_presentable())
-            .for_each(|f| f())
+            .for_each(|f| {
+                f();
+                future::ready(())
+            });
+
+        futures::executor::block_on(t);
     }
 }
 
@@ -43,7 +50,7 @@ impl TopicQuery {
         Box::new(TopicQuery { topic_name, progress })
     }
 
-    fn resulted_with(&self, result: Box<dyn Iterator<Item=Record>>) -> QueryResult {
+    fn resulted_with(&self, result: Pin<Box<dyn Stream<Item=Record>>>) -> QueryResult {
         QueryResult {
             progress: self.progress.clone(),
             result,
@@ -51,21 +58,21 @@ impl TopicQuery {
     }
 }
 
+
 struct QueryResult {
     progress: Arc<dyn Progress>,
-    result: Box<dyn Iterator<Item=Record>>,
+    result: Pin<Box<dyn Stream<Item=Record>>>,
 }
 
 impl QueryResult {
-    fn to_presentable<'a>(self) -> Box<dyn Iterator<Item=Box<dyn FnOnce() + 'a>> + 'a> {
+    fn to_presentable<'a>(self) -> Pin<Box<dyn Stream<Item=Box<dyn FnOnce() + 'a>> + 'a>> {
         let QueryResult { progress, result } = self;
         let progress_result = progress.clone();
         let progress_finish = progress.clone();
 
-        Box::new(
-            result
-                .map(move |rec| QueryResult::notify(progress_result.clone(), rec))
-                .chain(std::iter::once(QueryResult::finish(progress_finish))))
+        Box::pin(result
+            .map(move |rec| QueryResult::notify(progress_result.clone(), rec))
+            .chain(stream::once(async { QueryResult::finish(progress_finish) })))
     }
 
     fn notify<'a>(progress: Arc<dyn Progress>, rec: Record) -> Box<dyn FnOnce() + 'a> {
