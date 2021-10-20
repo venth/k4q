@@ -3,14 +3,12 @@ use std::sync::Arc;
 use shaku::Interface;
 
 use crate::domain::model::{Command, TopicName, TopicsMatcherType};
-use crate::domain::model::Criteria;
 use crate::domain::model::Progress;
 use crate::domain::model::Record;
 
 pub trait RecordFinder: Interface {
     fn find_by<'a>(&self,
-                   topic_name: TopicName,
-                   criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>>;
+                   topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>>;
 }
 
 pub trait CommandRecognizer: Interface {

@@ -26,7 +26,7 @@ impl PreparedCommand {
         self.topics_finder
             .find_by(topics_matcher)
             .map(|topic_name| TopicQuery::new(topic_name, self.progress_notifier.start()))
-            .map(|query| query.with_result(self.record_finder.find_by(query.topic_name.clone(), criteria)))
+            .map(|query| query.resulted_with(self.record_finder.find_by(&query.topic_name)))
             .flat_map(|result| result.to_presentable())
             .for_each(|f| f())
     }
@@ -42,7 +42,7 @@ impl TopicQuery {
         Box::new(TopicQuery { topic_name, progress })
     }
 
-    fn with_result(&self, result: Box<dyn Iterator<Item=Record>>) -> QueryResult {
+    fn resulted_with(&self, result: Box<dyn Iterator<Item=Record>>) -> QueryResult {
         QueryResult {
             progress: self.progress.clone(),
             result,

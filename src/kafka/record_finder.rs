@@ -2,13 +2,14 @@ use std::iter;
 
 use shaku::Component;
 
-use crate::domain::model::{Criteria, KeyValue, Offset, Partition, Payload, TopicName};
+use crate::domain::model::{KeyValue, Offset, Partition, Payload, TopicName};
 use crate::domain::model::Record;
-use crate::domain::ports::RecordFinder;
+use crate::domain::ports;
 
-impl RecordFinder for KafkaRecordFinder {
-    fn find_by<'a>(&self, topic_name: TopicName, criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>> {
-        Box::new(iter::repeat(|| Record::of(
+impl ports::RecordFinder for KafkaRecordFinder {
+    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>> {
+        let topic_name = topic_name.clone();
+        Box::new(iter::repeat(move || Record::of(
             topic_name,
             KeyValue::from("key"),
             Partition::from(&0),
@@ -22,5 +23,5 @@ impl RecordFinder for KafkaRecordFinder {
 
 
 #[derive(Component)]
-#[shaku(interface = RecordFinder)]
+#[shaku(interface = ports::RecordFinder)]
 pub struct KafkaRecordFinder {}
