@@ -1,26 +1,28 @@
-use std::iter;
-
+use rxrust::observable;
+use rxrust::observable::Observable;
+use rxrust::ops::box_it::LocalBoxOp;
 use shaku::Component;
 
 use crate::domain::model::{Criteria, KeyValue, Offset, Partition, Payload, TopicName};
 use crate::domain::model::Record;
-use crate::domain::ports::RecordFinder;
+use crate::domain::ports;
 
-impl RecordFinder for KafkaRecordFinder {
-    fn find_by<'a>(&self, topic_name: TopicName, criteria: &'a dyn Criteria) -> Box<dyn Iterator<Item=Record>> {
-        Box::new(iter::repeat(|| Record::of(
-            topic_name,
-            KeyValue::from("key"),
-            Partition::from(&0),
-            Offset::from(&0),
-            Payload::from("{}"),
-        ))
-            .take(4280)
-            .map(|f| f()))
+impl ports::RecordFinder for KafkaRecordFinder {
+    fn find_by(&self, topic_name: TopicName) -> LocalBoxOp<Record, ()> {
+        observable::repeat(
+            move || Record::of(
+                topic_name.clone(),
+                KeyValue::from("key"),
+                Partition::from(&0),
+                Offset::from(&0),
+                Payload::from("{}")),
+        4280)
+            .map(|f| f())
+            .box_it()
     }
 }
 
 
 #[derive(Component)]
-#[shaku(interface = RecordFinder)]
+#[shaku(interface = ports::RecordFinder)]
 pub struct KafkaRecordFinder {}

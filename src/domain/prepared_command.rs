@@ -1,5 +1,9 @@
 use std::sync::Arc;
 
+use rxrust::observable;
+use rxrust::observable::{Observable, SubscribeNext};
+use rxrust::ops::box_it::{BoxObservable, LocalBoxOp};
+
 use crate::domain::model::{Command, Criteria, Progress, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
@@ -26,9 +30,10 @@ impl PreparedCommand {
         self.topics_finder
             .find_by(topics_matcher)
             .map(|topic_name| TopicQuery::new(topic_name, self.progress_notifier.start()))
-            .map(|query| query.with_result(self.record_finder.find_by(query.topic_name.clone(), criteria)))
-            .flat_map(|result| result.to_presentable())
-            .for_each(|f| f())
+            .flat_map(|query| self.record_finder
+                .find_by(query.topic_name.clone())
+                .map(move |record| query.resulted_with(record)))
+            .subscribe(|result| result.unwrap().notify());
     }
 }
 
@@ -42,39 +47,22 @@ impl TopicQuery {
         Box::new(TopicQuery { topic_name, progress })
     }
 
-    fn with_result(&self, result: Box<dyn Iterator<Item=Record>>) -> QueryResult {
-        QueryResult {
+    fn resulted_with(&self, record: Record) -> Result<QueryResult, ()> {
+        Result::Ok(QueryResult {
             progress: self.progress.clone(),
-            result,
-        }
+            record,
+        })
     }
 }
 
 struct QueryResult {
     progress: Arc<dyn Progress>,
-    result: Box<dyn Iterator<Item=Record>>,
+    record: Record,
 }
 
 impl QueryResult {
-    fn to_presentable<'a>(self) -> Box<dyn Iterator<Item=Box<dyn FnOnce() + 'a>> + 'a> {
-        let QueryResult { progress, result } = self;
-        let progress_result = progress.clone();
-        let progress_finish = progress.clone();
-
-        Box::new(
-            result
-                .map(move |rec| QueryResult::notify(progress_result.clone(), rec))
-                .chain(std::iter::once(QueryResult::finish(progress_finish))))
-    }
-
-    fn notify<'a>(progress: Arc<dyn Progress>, rec: Record) -> Box<dyn FnOnce() + 'a> {
-        Box::new(move || {
-            progress.message(serde_json::to_string(&rec).unwrap_or("Ups".to_string()).as_str());
-            progress.increase();
-        })
-    }
-
-    fn finish<'a>(progress: Arc<dyn Progress>) -> Box<dyn FnOnce() + 'a> {
-        Box::new(move || progress.finish())
+    pub fn notify(self) {
+        self.progress.message(serde_json::to_string(&self.record).unwrap_or("Ups".to_string()).as_str());
+        self.progress.increase();
     }
 }
