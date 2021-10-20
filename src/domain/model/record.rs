@@ -1,5 +1,8 @@
 use serde;
 
+use crate::domain::model::partition::Partition;
+use crate::domain::model::topic_name::TopicName;
+
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Record {
     topic_name: TopicName,
@@ -15,18 +18,8 @@ pub struct KeyValue {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct Partition {
-    value: i32,
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Offset {
     value: i64,
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct TopicName {
-    value: String,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -43,36 +36,6 @@ impl From<&str> for KeyValue {
 impl From<&str> for Payload {
     fn from(value: &str) -> Self {
         Self { value: String::from(value) }
-    }
-}
-
-impl From<&str> for TopicName {
-    fn from(value: &str) -> Self {
-        Self { value: String::from(value) }
-    }
-}
-
-impl From<&String> for TopicName {
-    fn from(value: &String) -> Self {
-        Self { value: String::from(value) }
-    }
-}
-
-impl From<&TopicName> for String {
-    fn from(t: &TopicName) -> Self {
-        t.value.clone()
-    }
-}
-
-impl Clone for TopicName {
-    fn clone(&self) -> Self {
-        TopicName { value: self.value.clone() }
-    }
-}
-
-impl From<&i32> for Partition {
-    fn from(value: &i32) -> Self {
-        Self { value: *value }
     }
 }
 

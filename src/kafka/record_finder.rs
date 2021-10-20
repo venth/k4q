@@ -2,8 +2,10 @@ use std::iter;
 
 use shaku::Component;
 
-use crate::domain::model::{KeyValue, Offset, Partition, Payload, TopicName};
+use crate::domain::model::{KeyValue, Offset, Payload};
+use crate::domain::model::Partition;
 use crate::domain::model::Record;
+use crate::domain::model::TopicName;
 use crate::domain::ports;
 
 impl ports::RecordFinder for KafkaRecordFinder {

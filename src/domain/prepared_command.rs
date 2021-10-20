@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use crate::domain::model::{Command, Criteria, Progress, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, Progress, Record, TopicsMatcherType};
+use crate::domain::model::TopicName;
 use crate::domain::ports;
 
 pub struct PreparedCommand {
