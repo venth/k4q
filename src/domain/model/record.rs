@@ -39,9 +39,9 @@ impl From<&str> for Payload {
     }
 }
 
-impl From<&i64> for Offset {
-    fn from(value: &i64) -> Self {
-        Self { value: *value }
+impl From<i64> for Offset {
+    fn from(value: i64) -> Self {
+        Self { value }
     }
 }
 

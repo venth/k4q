@@ -28,7 +28,7 @@ impl PreparedCommand {
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
         let t = self.topics_finder
             .find_by(topics_matcher)
-            .map(|topic_name| TopicQuery::new(topic_name, self.progress_notifier.start()))
+            .map(|topic| TopicQuery::new(topic.topic_name, self.progress_notifier.start()))
             .map(|query| query.resulted_with(self.record_finder.find_by(&query.topic_name)))
             .flat_map(|result| result.to_presentable())
             .for_each(|f| {

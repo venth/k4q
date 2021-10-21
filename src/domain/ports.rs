@@ -4,7 +4,7 @@ use std::sync::Arc;
 use futures::Stream;
 use shaku::Interface;
 
-use crate::domain::model::{Command, TopicsMatcherType};
+use crate::domain::model::{Command, Topic, TopicsMatcherType};
 use crate::domain::model::Progress;
 use crate::domain::model::Record;
 use crate::domain::model::TopicName;
@@ -23,5 +23,5 @@ pub trait ProgressNotifier: Interface {
 }
 
 pub trait TopicsFinder: Interface {
-    fn find_by<'a>(&self, topics_matcher_type: &'a TopicsMatcherType) -> Pin<Box<dyn Stream<Item=TopicName> + 'a>>;
+    fn find_by<'a>(&self, topics_matcher_type: &'a TopicsMatcherType) -> Pin<Box<dyn Stream<Item=Topic> + 'a>>;
 }

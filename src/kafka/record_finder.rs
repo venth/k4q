@@ -17,8 +17,8 @@ impl ports::RecordFinder for KafkaRecordFinder {
             Record::of(
                 topic_name,
                 KeyValue::from("key"),
-                PartitionId::from(&0),
-                Offset::from(&0),
+                PartitionId::from(0),
+                Offset::from(0),
                 Payload::from("{}"),
             ))
             .take(4280)
