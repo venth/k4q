@@ -5,7 +5,7 @@ use futures::stream;
 use shaku::Component;
 
 use crate::domain::model::{KeyValue, Offset, Payload};
-use crate::domain::model::Partition;
+use crate::domain::model::PartitionId;
 use crate::domain::model::Record;
 use crate::domain::model::TopicName;
 use crate::domain::ports;
@@ -17,7 +17,7 @@ impl ports::RecordFinder for KafkaRecordFinder {
             Record::of(
                 topic_name,
                 KeyValue::from("key"),
-                Partition::from(&0),
+                PartitionId::from(&0),
                 Offset::from(&0),
                 Payload::from("{}"),
             ))

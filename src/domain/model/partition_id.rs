@@ -1,9 +1,9 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct Partition {
+pub struct PartitionId {
     value: i32,
 }
 
-impl From<&i32> for Partition {
+impl From<&i32> for PartitionId {
     fn from(value: &i32) -> Self {
         Self { value: *value }
     }

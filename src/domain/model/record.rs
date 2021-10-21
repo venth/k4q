@@ -1,13 +1,13 @@
 use serde;
 
-use crate::domain::model::partition::Partition;
+use crate::domain::model::partition_id::PartitionId;
 use crate::domain::model::topic_name::TopicName;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Record {
     topic_name: TopicName,
     key: KeyValue,
-    partition: Partition,
+    partition: PartitionId,
     offset: Offset,
     payload: Payload,
 }
@@ -49,13 +49,13 @@ impl Record {
     pub fn of(
         topic_name: TopicName,
         key: KeyValue,
-        partition: Partition,
+        partition: PartitionId,
         offset: Offset,
         payload: Payload) -> Self {
         Self {
             topic_name: TopicName::from(topic_name),
             key: KeyValue::from(key),
-            partition: Partition::from(partition),
+            partition: PartitionId::from(partition),
             offset: Offset::from(offset),
             payload: Payload::from(payload),
         }
