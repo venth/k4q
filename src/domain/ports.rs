@@ -19,7 +19,7 @@ pub trait CommandRecognizer: Interface {
 
 pub trait ProgressNotifier: Interface {
     fn notify(&self, message: &str);
-    fn start(&self) -> Arc<dyn Progress>;
+    fn start(&self, estimated_max_size: &i64) -> Arc<dyn Progress>;
 }
 
 pub trait TopicsFinder: Interface {

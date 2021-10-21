@@ -8,8 +8,8 @@ use crate::domain::{model, ports};
 impl ports::ProgressNotifier for ConsoleErrorNotifier {
     fn notify(&self, message: &str) {}
 
-    fn start(&self) -> Arc<dyn model::Progress> {
-        let pb = self.progress.add(ProgressBar::new(4280));
+    fn start(&self, estimated_max_size: &i64) -> Arc<dyn model::Progress> {
+        let pb = self.progress.add(ProgressBar::new(*estimated_max_size as u64));
         pb.set_style(self.progress_style.clone());
         pb.set_position(0);
 

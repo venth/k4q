@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use futures::{future, stream, Stream, StreamExt};
 
-use crate::domain::model::{Command, Criteria, Progress, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, Progress, Record, Topic, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
@@ -28,8 +28,8 @@ impl PreparedCommand {
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
         let t = self.topics_finder
             .find_by(topics_matcher)
-            .map(|topic| TopicQuery::new(topic.topic_name, self.progress_notifier.start()))
-            .map(|query| query.resulted_with(self.record_finder.find_by(&query.topic_name)))
+            .map(|topic| self.initiate_query(topic))
+            .map(|query| query.resulted_with(self.record_finder.find_by(query.topic_name())))
             .flat_map(|result| result.to_presentable())
             .for_each(|f| {
                 f();
@@ -38,16 +38,21 @@ impl PreparedCommand {
 
         futures::executor::block_on(t);
     }
+
+    fn initiate_query(&self, topic: Topic) -> TopicQuery {
+        let record_count = topic.record_count();
+        TopicQuery::new(topic, self.progress_notifier.start(&record_count))
+    }
 }
 
 struct TopicQuery {
-    topic_name: TopicName,
+    topic: Topic,
     progress: Arc<dyn Progress>,
 }
 
 impl TopicQuery {
-    fn new(topic_name: TopicName, progress: Arc<dyn Progress>) -> Box<TopicQuery> {
-        Box::new(TopicQuery { topic_name, progress })
+    fn new(topic: Topic, progress: Arc<dyn Progress>) -> TopicQuery {
+        TopicQuery { topic, progress }
     }
 
     fn resulted_with(&self, result: Pin<Box<dyn Stream<Item=Record>>>) -> QueryResult {
@@ -55,6 +60,10 @@ impl TopicQuery {
             progress: self.progress.clone(),
             result,
         }
+    }
+
+    fn topic_name(&self) -> &TopicName {
+        &self.topic.topic_name
     }
 }
 
