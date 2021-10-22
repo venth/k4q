@@ -11,7 +11,7 @@ mod kafka;
 fn kafka_tests() {
     log4rs::init_file("config/log4rs-test.yaml", Default::default()).unwrap();
 
-    kafka::while_is_running_do(produces_records)
+    kafka::while_runs_do(produces_records)
 }
 
 fn produces_records(producer: &FutureProducer) {

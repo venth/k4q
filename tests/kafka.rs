@@ -3,7 +3,7 @@ use rdkafka::producer::FutureProducer;
 use testcontainers::{clients, Container, images};
 use testcontainers::images::kafka::Kafka;
 
-pub fn while_is_running_do<F>(f: F) where F: Fn(&FutureProducer) {
+pub fn while_runs_do<F>(f: F) where F: Fn(&FutureProducer) {
     let cli = clients::Cli::default();
     // it seems that #run function is wrongly implemented - it passes to its result `docker` reference
     // which prevents to store the result in a struct :(
