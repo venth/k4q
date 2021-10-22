@@ -16,3 +16,5 @@ write my own tool.
 - [clap](https://github.com/clap-rs/clap) - provides good use & fill for the command line
 - [mitsuhiko/indicatif](https://github.com/mitsuhiko/indicatif) - rendering progress bar and found records
 - [serde](https://github.com/serde-rs/serde) - json handling
+## Tools
+- [kafka docker-compose](https://github.com/wurstmeister/kafka-docker)
