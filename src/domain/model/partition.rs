@@ -1,4 +1,4 @@
-use crate::domain::model::PartitionId;
+use crate::domain::model::{Count, PartitionId};
 use crate::domain::model::watermark::Watermark;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -18,7 +18,7 @@ impl Partition {
         }
     }
 
-    pub fn record_count(&self) -> i64 {
-        &self.high_watermark - &self.low_watermark
+    pub fn record_count(&self) -> Count {
+        Count::from(&self.high_watermark - &self.low_watermark)
     }
 }

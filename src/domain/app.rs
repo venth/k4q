@@ -20,6 +20,9 @@ pub struct AppImpl {
     topics_finder: Arc<dyn ports::TopicsFinder>,
 
     #[shaku(inject)]
+    query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
+
+    #[shaku(inject)]
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
 }
 
@@ -38,12 +41,14 @@ impl AppImpl {
                 record_finder: self.record_finder.clone(),
                 progress_notifier: self.progress_notifier.clone(),
                 topics_finder: self.topics_finder.clone(),
+                query_range_estimator: self.query_range_estimator.clone(),
                 cmd,
             })
             .unwrap_or_else(|| PreparedCommand {
                 record_finder: self.record_finder.clone(),
                 progress_notifier: self.progress_notifier.clone(),
                 topics_finder: self.topics_finder.clone(),
+                query_range_estimator: self.query_range_estimator.clone(),
                 cmd: Command::CommandNotRecognized,
             })
     }

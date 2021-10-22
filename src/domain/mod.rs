@@ -13,7 +13,7 @@ mod prepared_command;
 
 pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> {}
 
-pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> + HasComponent<dyn ports::TopicsFinder> {}
+pub trait KafkaModule: HasComponent<dyn ports::RecordFinder> + HasComponent<dyn ports::TopicsFinder> + HasComponent<dyn ports::QueryRangeEstimator> {}
 
 pub trait ConsoleModule: HasComponent<dyn ports::ProgressNotifier> {}
 
@@ -30,7 +30,7 @@ module! {
         },
 
         use KafkaModule {
-            components = [ports::RecordFinder, ports::TopicsFinder],
+            components = [ports::RecordFinder, ports::TopicsFinder, ports::QueryRangeEstimator],
             providers = [],
         },
 

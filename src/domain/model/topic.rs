@@ -1,5 +1,5 @@
 use crate::domain::model::partition::Partition;
-use crate::domain::model::TopicName;
+use crate::domain::model::{Count, TopicName};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Topic {
@@ -15,7 +15,7 @@ impl Topic {
         }
     }
 
-    pub fn record_count(&self) -> i64 {
+    pub fn record_count(&self) -> Count {
         self.partitions.iter()
             .map(Partition::record_count)
             .sum()

@@ -3,13 +3,14 @@ use std::sync::Arc;
 
 use futures::{future, stream, Stream, StreamExt};
 
-use crate::domain::model::{Command, Criteria, Progress, Record, Topic, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
     pub record_finder: Arc<dyn ports::RecordFinder>,
     pub progress_notifier: Arc<dyn ports::ProgressNotifier>,
     pub topics_finder: Arc<dyn ports::TopicsFinder>,
+    pub query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
 
     pub(crate) cmd: Command,
 }
@@ -28,7 +29,8 @@ impl PreparedCommand {
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
         let t = self.topics_finder
             .find_by(topics_matcher)
-            .map(|topic| self.initiate_query(topic))
+            .map(|topic| self.query_range_estimator.estimate(&topic, &QueryRange::Whole))
+            .map(|query_range| self.initiate_query(query_range))
             .map(|query| query.resulted_with(self.record_finder.find_by(query.topic_name())))
             .flat_map(|result| result.to_presentable())
             .for_each(|f| {
@@ -39,20 +41,20 @@ impl PreparedCommand {
         futures::executor::block_on(t);
     }
 
-    fn initiate_query(&self, topic: Topic) -> TopicQuery {
-        let record_count = topic.record_count();
-        TopicQuery::new(topic, self.progress_notifier.start(&record_count))
+    fn initiate_query(&self, estimated_range: EstimatedQueryRange) -> TopicQuery {
+        let record_count = estimated_range.estimated_record_count;
+        TopicQuery::new(estimated_range.topic_name, self.progress_notifier.start(&record_count))
     }
 }
 
 struct TopicQuery {
-    topic: Topic,
+    topic_name: TopicName,
     progress: Arc<dyn Progress>,
 }
 
 impl TopicQuery {
-    fn new(topic: Topic, progress: Arc<dyn Progress>) -> TopicQuery {
-        TopicQuery { topic, progress }
+    fn new(topic_name: TopicName, progress: Arc<dyn Progress>) -> TopicQuery {
+        TopicQuery { topic_name, progress }
     }
 
     fn resulted_with(&self, result: Pin<Box<dyn Stream<Item=Record>>>) -> QueryResult {
@@ -63,7 +65,7 @@ impl TopicQuery {
     }
 
     fn topic_name(&self) -> &TopicName {
-        &self.topic.topic_name
+        &self.topic_name
     }
 }
 
