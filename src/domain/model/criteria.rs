@@ -1,10 +1,11 @@
-use crate::domain::model::{KeyValue, Record};
+use crate::domain::model::Record;
+use crate::domain::model::record_key::RecordKey;
 
 pub trait Criteria {
     fn test(&self, rec: &Record) -> bool;
 }
 
-pub fn key_equals_value(value: KeyValue) -> Box<dyn Criteria> {
+pub fn key_equals_value(value: RecordKey) -> Box<dyn Criteria> {
     Box::new(CriteriaKeyEqualsValue { key: value })
 }
 
@@ -22,6 +23,6 @@ impl Criteria for CriteriaKeyEqualsValue {
 
 #[derive(Debug)]
 struct CriteriaKeyEqualsValue {
-    key: KeyValue,
+    key: RecordKey,
 }
 

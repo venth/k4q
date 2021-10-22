@@ -1,26 +1,23 @@
-use serde;
-
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(into="String")]
-pub struct PartitionId {
-    value: i32,
+pub struct Offset {
+    value: i64,
 }
 
-impl From<PartitionId> for String {
-    fn from(t: PartitionId) -> Self {
+impl From<Offset> for String {
+    fn from(t: Offset) -> Self {
         t.value.to_string()
     }
 }
 
-impl From<i32> for PartitionId {
-    fn from(value: i32) -> Self {
+impl From<i64> for Offset {
+    fn from(value: i64) -> Self {
         Self { value }
     }
 }
 
-impl Clone for PartitionId {
+impl Clone for Offset {
     fn clone(&self) -> Self {
         Self { value: self.value.clone() }
     }
 }
-

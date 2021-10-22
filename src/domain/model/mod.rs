@@ -1,21 +1,21 @@
 pub use self::command::Command;
 pub use self::command::ConfigurationSetup;
+pub use self::count::Count;
 pub use self::criteria::Criteria;
 pub use self::criteria::key_equals_value;
+pub use self::estimated_query_range::EstimatedQueryRange;
 pub use self::partition::Partition;
 pub use self::partition_id::PartitionId;
 pub use self::progress::Progress;
-pub use self::record::KeyValue;
-pub use self::record::Offset;
+pub use self::query_range::QueryRange;
+pub use self::offset::Offset;
 pub use self::record::Payload;
 pub use self::record::Record;
+pub use self::record_key::RecordKey;
 pub use self::topic::Topic;
 pub use self::topic_name::TopicName;
 pub use self::topics_matcher_type::TopicsMatcherType;
 pub use self::watermark::Watermark;
-pub use self::estimated_query_range::EstimatedQueryRange;
-pub use self::query_range::QueryRange;
-pub use self::count::Count;
 
 mod command;
 mod topics_matcher_type;
@@ -30,4 +30,6 @@ mod watermark;
 mod estimated_query_range;
 mod query_range;
 mod count;
+mod record_key;
+mod offset;
 

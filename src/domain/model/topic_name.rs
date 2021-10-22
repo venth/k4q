@@ -1,6 +1,16 @@
+use serde;
+
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(into="String")]
 pub struct TopicName {
     value: String,
+}
+
+
+impl From<TopicName> for String {
+    fn from(t: TopicName) -> Self {
+        t.value
+    }
 }
 
 impl From<&TopicName> for String {

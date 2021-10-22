@@ -5,8 +5,9 @@ use shaku;
 use shaku::Component;
 
 use crate::cli::command_selector::CommandSelector;
-use crate::domain::model::{Command, ConfigurationSetup, KeyValue, TopicsMatcherType};
+use crate::domain::model::{Command, ConfigurationSetup, TopicsMatcherType};
 use crate::domain::model;
+use crate::domain::model::RecordKey;
 
 impl CommandSelector for Matcher {
     fn select_by<'a>(&self, matched: ArgMatches) -> Option<Command> {
@@ -32,7 +33,7 @@ impl CommandSelector for Matcher {
 
         query_key_criteria
             .zip(query_key_value)
-            .map(|(op, v)| model::key_equals_value(KeyValue::from(v)))
+            .map(|(op, v)| model::key_equals_value(RecordKey::from(v)))
             .zip(query_topics)
             .map(|(crit, topics)| Command::QueryByKey(
                 Box::new(kafka_config),
