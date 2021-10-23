@@ -18,3 +18,5 @@ write my own tool.
 - [serde](https://github.com/serde-rs/serde) - json handling
 ## Tools
 - [kafka docker-compose](https://github.com/wurstmeister/kafka-docker)
+## Testing
+- [assert-cmd](https://github.com/assert-rs/assert_cmd)

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use shaku;
 
 use crate::domain::{model, ports};
@@ -12,6 +12,7 @@ impl ports::ProgressNotifier for ConsoleErrorNotifier {
         let pb = self.progress.add(ProgressBar::new(estimated_max_size.value));
         pb.set_style(self.progress_style.clone());
         pb.set_position(0);
+        pb.set_draw_target(ProgressDrawTarget::stderr());
 
         Arc::new(IndicatifProgress {
             bar: pb

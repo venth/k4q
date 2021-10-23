@@ -1,25 +1,28 @@
+use std::panic;
+use std::sync::Arc;
+
 use rdkafka::ClientConfig;
 use rdkafka::producer::FutureProducer;
 use testcontainers::{clients, Container, images};
 use testcontainers::images::kafka::Kafka;
 
-pub fn while_runs_do<F>(f: F) where F: Fn(&FutureProducer) {
+pub fn while_runs_do<'a, F>(f: F) where
+    F: FnOnce(Arc<FutureProducer>) -> () + panic::UnwindSafe {
     let cli = clients::Cli::default();
     // it seems that #run function is wrongly implemented - it passes to its result `docker` reference
     // which prevents to store the result in a struct :(
     let server = cli.run(images::kafka::Kafka::default());
 
     server.start();
-    let producer = create_producer(&server);
+    let producer = Arc::new(create_producer(&server));
 
-    f(&producer);
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| { f(producer.clone()); }));
 
     server.stop();
-}
 
-struct Test<'a> {
-    cli: Box<clients::Cli>,
-    server: Box<Container<'a, images::kafka::Kafka>>,
+    if let Err(err) = result {
+        panic::resume_unwind(err);
+    }
 }
 
 fn create_producer(kafka_node: &Container<Kafka>) -> FutureProducer {
