@@ -1,6 +1,6 @@
 use shaku::Component;
-use crate::domain::model::{Count, EstimatedQueryRange, QueryRange, Topic};
 
+use crate::domain::model::{Count, EstimatedQueryRange, QueryRange, Topic};
 use crate::domain::ports;
 
 impl ports::QueryRangeEstimator for KafkaQueryRangeEstimator {

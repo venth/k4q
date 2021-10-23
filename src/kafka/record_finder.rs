@@ -32,4 +32,6 @@ impl ports::RecordFinder for KafkaRecordFinder {
 
 #[derive(Component)]
 #[shaku(interface = ports::RecordFinder)]
-pub struct KafkaRecordFinder {}
+pub struct KafkaRecordFinder {
+    
+}
