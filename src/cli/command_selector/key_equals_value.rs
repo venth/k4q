@@ -1,6 +1,7 @@
 use std::iter::FromIterator;
 
 use clap::ArgMatches;
+use home::home_dir;
 use shaku;
 use shaku::Component;
 
@@ -11,7 +12,9 @@ use crate::domain::model::RecordKey;
 
 impl CommandSelector for Matcher {
     fn select_by<'a>(&self, matched: ArgMatches) -> Option<Command> {
-        let kafka_config = ConfigurationSetup::default();
+        let kafka_config = home_dir()
+            .map(|p| p.join(".k4q/config.yaml"))
+            .map(|p| ConfigurationSetup { location: p });
 
         let query_topics: Option<Vec<String>> = matched
             .subcommand_matches("query")
@@ -19,7 +22,7 @@ impl CommandSelector for Matcher {
             .map(|topics| Vec::from_iter(topics))
             .map(Vec::into_iter)
             .map(|topics| topics.map(ToString::to_string))
-            .map(|topics|topics.collect());
+            .map(|topics| topics.collect());
 
         let query_key_criteria = matched
             .subcommand_matches("query")

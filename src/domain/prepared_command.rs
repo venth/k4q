@@ -11,8 +11,9 @@ pub struct PreparedCommand {
     pub progress_notifier: Arc<dyn ports::ProgressNotifier>,
     pub topics_finder: Arc<dyn ports::TopicsFinder>,
     pub query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
+    pub properties_source: Arc<dyn ports::PropertiesSource>,
 
-    pub(crate) cmd: Command,
+    pub cmd: Command,
 }
 
 impl PreparedCommand {
@@ -21,7 +22,13 @@ impl PreparedCommand {
             Command::QueryByKey(
                 config,
                 topics_matcher,
-                criteria) => self.execute_query_by_key(topics_matcher, criteria),
+                criteria) => {
+                let properties = self.properties_source.load(
+                    config.as_ref().as_ref().unwrap().location.as_path()
+                );
+                println!("==========> {}", serde_json::to_string(&properties).unwrap_or("Ups".to_string()).as_str());
+                self.execute_query_by_key(topics_matcher, criteria)
+            }
             _ => self.progress_notifier.notify("Command not found"),
         };
     }

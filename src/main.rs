@@ -2,12 +2,14 @@ mod domain;
 mod cli;
 mod kafka;
 mod console;
+mod properties;
 
 fn main() {
     let app_module = domain::module(
         cli::module(),
         kafka::module(),
-        console::module());
+        console::module(),
+    properties::module());
 
     let app: &dyn domain::service::App = app_module.resolve_ref();
 

@@ -16,7 +16,7 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
             model::TopicsMatcherType::DIRECT(topics) => {
                 stream::iter(topics)
                     .map(model::TopicName::from)
-                    .map(move |topic_name| model::Topic::new(topic_name, stub_partitions(10)))
+                    .map(move |topic_name| model::Topic::new(topic_name, stub_partitions(1)))
                     .boxed()
             }
             _ => { stream::empty::<model::Topic>().boxed() }
@@ -33,6 +33,6 @@ fn stub_partition(id: i32, low: i64, high: i64) -> model::Partition {
 
 fn stub_partitions(number_of_partitions: i32) -> Vec<model::Partition> {
     (1..number_of_partitions)
-        .map(|id| stub_partition(id - 1, 0, (100 * id) as i64))
+        .map(|id| stub_partition(id - 1, 0, 10))
         .collect::<Vec<model::Partition>>()
 }

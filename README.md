@@ -17,6 +17,7 @@ write my own tool.
 - [mitsuhiko/indicatif](https://github.com/mitsuhiko/indicatif) - rendering progress bar and found records
 - [serde](https://github.com/serde-rs/serde) - json handling
 - [immutable datastructures](https://github.com/bodil/im-rs) 
+- [Layered configuration system](https://github.com/mehcode/config-rs)
 ## Tools
 - [kafka docker-compose](https://github.com/wurstmeister/kafka-docker)
 ## Testing

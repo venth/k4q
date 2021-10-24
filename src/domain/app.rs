@@ -24,6 +24,9 @@ pub struct AppImpl {
 
     #[shaku(inject)]
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
+
+    #[shaku(inject)]
+    properties_source: Arc<dyn ports::PropertiesSource>,
 }
 
 impl service::App for AppImpl {
@@ -42,6 +45,7 @@ impl AppImpl {
                 progress_notifier: self.progress_notifier.clone(),
                 topics_finder: self.topics_finder.clone(),
                 query_range_estimator: self.query_range_estimator.clone(),
+                properties_source: self.properties_source.clone(),
                 cmd,
             })
             .unwrap_or_else(|| PreparedCommand {
@@ -49,6 +53,7 @@ impl AppImpl {
                 progress_notifier: self.progress_notifier.clone(),
                 topics_finder: self.topics_finder.clone(),
                 query_range_estimator: self.query_range_estimator.clone(),
+                properties_source: self.properties_source.clone(),
                 cmd: Command::CommandNotRecognized,
             })
     }

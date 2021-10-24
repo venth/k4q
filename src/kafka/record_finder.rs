@@ -23,7 +23,7 @@ impl ports::RecordFinder for KafkaRecordFinder {
                 Offset::from(0),
                 Payload::from("{}"),
             ))
-            .take(4280)
+            .take(10)
             .map(|f| f())
             .boxed()
     }
