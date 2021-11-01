@@ -1,7 +1,5 @@
 use std::path::PathBuf;
 
-use home::home_dir;
-
 use crate::domain::model::criteria::Criteria;
 use crate::domain::model::topics_matcher_type::TopicsMatcherType;
 

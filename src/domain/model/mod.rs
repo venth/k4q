@@ -1,3 +1,5 @@
+pub use self::application_properties::ApplicationProperties;
+pub use self::application_properties::CollectableProperties;
 pub use self::command::Command;
 pub use self::command::ConfigurationSetup;
 pub use self::count::Count;
@@ -9,7 +11,6 @@ pub use self::offset::Offset;
 pub use self::partition::Partition;
 pub use self::partition_id::PartitionId;
 pub use self::progress::Progress;
-pub use self::properties::Properties;
 pub use self::query_range::QueryRange;
 pub use self::record::Payload;
 pub use self::record::Record;
@@ -34,6 +35,6 @@ mod query_range;
 mod count;
 mod record_key;
 mod offset;
-mod properties;
+mod application_properties;
 mod k4q_error;
 

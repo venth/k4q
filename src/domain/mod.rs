@@ -26,23 +26,23 @@ module! {
         components = [app::AppImpl],
         providers = [],
 
-        use CliModule {
-            components = [ports::CommandRecognizer],
+        use dyn CliModule {
+            components = [dyn ports::CommandRecognizer],
             providers = [],
         },
 
-        use KafkaModule {
-            components = [ports::RecordFinder, ports::TopicsFinder, ports::QueryRangeEstimator],
+        use dyn KafkaModule {
+            components = [dyn ports::RecordFinder, dyn ports::TopicsFinder, dyn ports::QueryRangeEstimator],
             providers = [],
         },
 
-        use ConsoleModule {
-            components = [ports::ProgressNotifier],
+        use dyn ConsoleModule {
+            components = [dyn ports::ProgressNotifier],
             providers = []
         },
 
-        use PropertiesModule {
-            components = [ports::PropertiesSource],
+        use dyn PropertiesModule {
+            components = [dyn ports::PropertiesSource],
             providers = []
         }
     }

@@ -1,8 +1,11 @@
+use std::collections::HashMap;
 use std::path::Path;
 
-use config::{Config, ConfigError};
+use config::{Config, ConfigError, Source, Value};
+use serde::{Deserialize, Deserializer};
+use serde::ser::Error;
 
-use crate::domain::model::{K4QError, Properties};
+use crate::domain::model::{ApplicationProperties, CollectableProperties, K4QError};
 use crate::domain::ports;
 
 #[derive(shaku::Component)]
@@ -10,12 +13,116 @@ use crate::domain::ports;
 pub struct ConfigurationLoader {}
 
 impl ports::PropertiesSource for ConfigurationLoader {
-    fn load(&self, config_location: &Path) -> Result<Properties, K4QError> {
+    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError> {
         Config::default()
             .with_merged(config::File::with_name(config_location.to_str().unwrap()))
-            .and_then(|config| config.try_into())
+            .map(ApplicationConfig::<PartialConfig>::new)
+            .map(Box::new)
+            .map(|c| c as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
             .map_err(K4QError::ConfigError)
+        // .and_then(|config| config.try_into())
+        // .map_err(ConfigurationLoader::description_of)
+        // .map_err(K4QError::ConfigError)
+    }
+}
+
+impl<T> CollectableProperties for ApplicationConfig<T> where
+    T: CollectableProperties + ApplicationProperties {
+    fn try_collect<'de, V>(self) -> Result<V, K4QError> where V: Sized + Deserialize<'de> {
+        self.config
+            .try_collect()
+    }
+}
+
+
+impl<T: ApplicationProperties + CollectableProperties> ApplicationProperties for ApplicationConfig<T> {
+    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+        self.config.properties_by(prefix)
+    }
+}
+
+
+pub struct ApplicationConfig<T>
+    where
+        T: CollectableProperties + ApplicationProperties,
+{
+    config: T,
+}
+
+impl ApplicationConfig<PartialConfig> {
+    pub fn new(config: Config) -> Self {
+        ApplicationConfig { config: PartialConfig { config } }
+    }
+}
+
+
+struct PartialConfig {
+    config: Config,
+}
+
+impl ApplicationProperties for PartialConfig {
+    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+        self.config
+            .get_table(prefix)
+            .map(PartialConfigSource::new)
+            .and_then(|c| Config::new().with_merged(c))
+            .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
+            .map_err(ConfigurationLoader::description_of)
+            .map_err(K4QError::ConfigError)
+    }
+}
+
+
+impl CollectableProperties for &dyn ApplicationProperties {
+    fn try_collect<'de, T>(self) -> Result<T, K4QError> where Self: CollectableProperties, T: Sized + Deserialize<'de> {
+        self.try_collect()
+    }
+}
+
+impl CollectableProperties for PartialConfig {
+
+    fn try_collect<'de, T>(self) -> Result<T, K4QError> where T: Sized + Deserialize<'de> {
+        self.config
+            .try_into()
+            .map_err(ConfigurationLoader::description_of)
+            .map_err(K4QError::ConfigError)
+    }
+}
+
+impl ApplicationProperties for Config {
+    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+        self
+            .get_table(prefix)
+            .map(PartialConfigSource::new)
+            .and_then(|c| Config::new().with_merged(c))
+            .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
+            .map_err(ConfigurationLoader::description_of)
+            .map_err(K4QError::ConfigError)
+        // .and_then(|c| c.try_into())
+        // .map_err(ConfigurationLoader::description_of)
+        // .map_err(K4QError::ConfigError)
+    }
+}
+
+#[derive(Debug, Clone)]
+struct PartialConfigSource {
+    props: HashMap<String, Value>,
+}
+
+impl PartialConfigSource {
+    fn new(props: HashMap<String, Value>) -> PartialConfigSource {
+        PartialConfigSource { props }
+    }
+}
+
+impl Source for PartialConfigSource {
+    fn clone_into_box(&self) -> Box<dyn Source + Send + Sync> {
+        Box::new(self.clone())
+    }
+
+    fn collect(&self) -> Result<HashMap<String, Value>, ConfigError> {
+        Result::Ok(self.props.clone())
     }
 }
 

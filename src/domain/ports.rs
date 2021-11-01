@@ -1,12 +1,11 @@
-use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::pin::Pin;
 use std::sync::Arc;
 
 use futures::Stream;
 use shaku::Interface;
 
-use crate::domain::model::{Command, Count, EstimatedQueryRange, K4QError, Properties, QueryRange, Topic, TopicsMatcherType};
+use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4QError, QueryRange, Topic, TopicsMatcherType};
 use crate::domain::model::Progress;
 use crate::domain::model::Record;
 use crate::domain::model::TopicName;
@@ -33,12 +32,11 @@ pub trait QueryRangeEstimator: Interface {
 }
 
 pub trait ConfiguredContextFactory: Interface {
-    fn create(&self, properties: &Properties) -> Box<dyn ConfiguredContext>;
+    fn create(&self, properties: &dyn ApplicationProperties) -> Box<dyn ConfiguredContext>;
 }
 
-pub trait ConfiguredContext: TopicsFinder + QueryRangeEstimator + RecordFinder {
-}
+pub trait ConfiguredContext: TopicsFinder + QueryRangeEstimator + RecordFinder {}
 
 pub trait PropertiesSource: Interface {
-    fn load(&self, config_location: &Path) -> Result<Properties, K4QError>;
+    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError>;
 }

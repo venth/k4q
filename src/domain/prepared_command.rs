@@ -2,8 +2,10 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use futures::{future, stream, Stream, StreamExt};
+use serde::Deserialize;
+use serde::Deserializer;
 
-use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{ApplicationProperties, CollectableProperties, Command, Criteria, EstimatedQueryRange, K4QError, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
@@ -16,6 +18,11 @@ pub struct PreparedCommand {
     pub cmd: Command,
 }
 
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct Kafka {}
+
+
 impl PreparedCommand {
     pub fn execute(&self) {
         match &self.cmd {
@@ -24,14 +31,23 @@ impl PreparedCommand {
                 topics_matcher,
                 criteria) => {
                 let properties = self.properties_source.load(
-                    config.as_ref().as_ref().unwrap().location.as_path()
-                );
-                println!("==========> {}", serde_json::to_string(&properties).unwrap_or("Ups".to_string()).as_str());
+                    config.as_ref().as_ref().unwrap().location.as_path());
+
+                let kafka: Kafka = properties
+                    .expect("properties are present")
+                    .properties_by("kafka")
+                    .expect("kafka is defined")
+                    .as_ref()
+                    .try_collect()
+                    .expect("structure is wrong");
+
+                println!("Kafka :{}", serde_json::to_string(&kafka).unwrap_or("Ups".to_string()).as_str() );
                 self.execute_query_by_key(topics_matcher, criteria)
             }
             _ => self.progress_notifier.notify("Command not found"),
         };
     }
+
 
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
         let t = self.topics_finder
