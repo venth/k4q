@@ -61,14 +61,27 @@ struct PartialConfig {
     config: Config,
 }
 
+impl PartialConfig {
+    pub fn error_description_in_context<'a>(context: &'a str) -> (impl Fn(String) -> String + 'a)
+    {
+        move |description| format!(
+            "Issue with property path: '{}' in the configuration file. The error: {}",
+            context, description)
+    }
+}
+
 impl ApplicationProperties for PartialConfig {
     fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+        let contextual_error = PartialConfig::error_description_in_context(prefix);
+
         self.config
             .get_table(prefix)
             .map(PartialConfigSource::new)
             .and_then(|c| Config::new().with_merged(c))
+            .map(ApplicationConfig::<PartialConfig>::new)
             .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
+            .map_err(contextual_error)
             .map_err(K4QError::ConfigError)
     }
 }
@@ -81,27 +94,11 @@ impl CollectableProperties for &dyn ApplicationProperties {
 }
 
 impl CollectableProperties for PartialConfig {
-
     fn try_collect<'de, T>(self) -> Result<T, K4QError> where T: Sized + Deserialize<'de> {
         self.config
             .try_into()
             .map_err(ConfigurationLoader::description_of)
             .map_err(K4QError::ConfigError)
-    }
-}
-
-impl ApplicationProperties for Config {
-    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
-        self
-            .get_table(prefix)
-            .map(PartialConfigSource::new)
-            .and_then(|c| Config::new().with_merged(c))
-            .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
-            .map_err(ConfigurationLoader::description_of)
-            .map_err(K4QError::ConfigError)
-        // .and_then(|c| c.try_into())
-        // .map_err(ConfigurationLoader::description_of)
-        // .map_err(K4QError::ConfigError)
     }
 }
 
