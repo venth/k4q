@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use config::{Config, ConfigError, Source, Value};
-use serde::{Deserialize, Deserializer};
-use serde::ser::Error;
+use serde::Deserialize;
 
-use crate::domain::model::{ApplicationProperties, CollectableProperties, K4QError};
+use crate::domain::model::{ApplicationConfig, ApplicationProperties, CollectableProperties, K4QError};
 use crate::domain::ports;
 
 #[derive(shaku::Component)]
@@ -16,6 +15,7 @@ impl ports::PropertiesSource for ConfigurationLoader {
     fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError> {
         Config::default()
             .with_merged(config::File::with_name(config_location.to_str().unwrap()))
+            .map(|c| PartialConfig { config: c })
             .map(ApplicationConfig::<PartialConfig>::new)
             .map(Box::new)
             .map(|c| c as Box<dyn ApplicationProperties>)
@@ -24,35 +24,6 @@ impl ports::PropertiesSource for ConfigurationLoader {
         // .and_then(|config| config.try_into())
         // .map_err(ConfigurationLoader::description_of)
         // .map_err(K4QError::ConfigError)
-    }
-}
-
-impl<T> CollectableProperties for ApplicationConfig<T> where
-    T: CollectableProperties + ApplicationProperties {
-    fn try_collect<'de, V>(self) -> Result<V, K4QError> where V: Sized + Deserialize<'de> {
-        self.config
-            .try_collect()
-    }
-}
-
-
-impl<T: ApplicationProperties + CollectableProperties> ApplicationProperties for ApplicationConfig<T> {
-    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
-        self.config.properties_by(prefix)
-    }
-}
-
-
-pub struct ApplicationConfig<T>
-    where
-        T: CollectableProperties + ApplicationProperties,
-{
-    config: T,
-}
-
-impl ApplicationConfig<PartialConfig> {
-    pub fn new(config: Config) -> Self {
-        ApplicationConfig { config: PartialConfig { config } }
     }
 }
 
@@ -78,18 +49,12 @@ impl ApplicationProperties for PartialConfig {
             .get_table(prefix)
             .map(PartialConfigSource::new)
             .and_then(|c| Config::new().with_merged(c))
+            .map(|c| PartialConfig { config: c })
             .map(ApplicationConfig::<PartialConfig>::new)
             .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
             .map_err(contextual_error)
             .map_err(K4QError::ConfigError)
-    }
-}
-
-
-impl CollectableProperties for &dyn ApplicationProperties {
-    fn try_collect<'de, T>(self) -> Result<T, K4QError> where Self: CollectableProperties, T: Sized + Deserialize<'de> {
-        self.try_collect()
     }
 }
 

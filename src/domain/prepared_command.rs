@@ -2,10 +2,8 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use futures::{future, stream, Stream, StreamExt};
-use serde::Deserialize;
-use serde::Deserializer;
 
-use crate::domain::model::{ApplicationProperties, CollectableProperties, Command, Criteria, EstimatedQueryRange, K4QError, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{CollectableProperties, Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
