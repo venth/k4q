@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use home::home_dir;
 use shaku::Component;
 
 use crate::domain::model::Command;
@@ -14,13 +15,7 @@ pub struct AppImpl {
     command_recognizer: Arc<dyn ports::CommandRecognizer>,
 
     #[shaku(inject)]
-    record_finder: Arc<dyn ports::RecordFinder>,
-
-    #[shaku(inject)]
-    topics_finder: Arc<dyn ports::TopicsFinder>,
-
-    #[shaku(inject)]
-    query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
+    configured_context_factory: Arc<dyn ports::ConfiguredContextFactory>,
 
     #[shaku(inject)]
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
@@ -38,22 +33,25 @@ impl service::App for AppImpl {
 
 impl AppImpl {
     fn command_of(&self, args: &&Vec<&str>) -> PreparedCommand {
+        let kafka_config = home_dir()
+            .map(|p| p.join(".k4q/config.yaml"))
+            .expect("cannot find config file - ups");
+
+        let props = self.properties_source.load(&kafka_config)
+            .expect("cannot load props");
+        let  configured_context: Arc<dyn ports::ConfiguredContext> = self.configured_context_factory.clone()
+            .create(props.as_ref())
+            .into();
         self.command_recognizer
             .recognize(&args)
             .map(|cmd| PreparedCommand {
-                record_finder: self.record_finder.clone(),
+                configured_context: configured_context.clone(),
                 progress_notifier: self.progress_notifier.clone(),
-                topics_finder: self.topics_finder.clone(),
-                query_range_estimator: self.query_range_estimator.clone(),
-                properties_source: self.properties_source.clone(),
                 cmd,
             })
             .unwrap_or_else(|| PreparedCommand {
-                record_finder: self.record_finder.clone(),
+                configured_context: configured_context.clone(),
                 progress_notifier: self.progress_notifier.clone(),
-                topics_finder: self.topics_finder.clone(),
-                query_range_estimator: self.query_range_estimator.clone(),
-                properties_source: self.properties_source.clone(),
                 cmd: Command::CommandNotRecognized,
             })
     }

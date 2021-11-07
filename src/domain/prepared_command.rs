@@ -7,18 +7,11 @@ use crate::domain::model::{CollectableProperties, Command, Criteria, EstimatedQu
 use crate::domain::ports;
 
 pub struct PreparedCommand {
-    pub record_finder: Arc<dyn ports::RecordFinder>,
+    pub configured_context: Arc<dyn ports::ConfiguredContext>,
     pub progress_notifier: Arc<dyn ports::ProgressNotifier>,
-    pub topics_finder: Arc<dyn ports::TopicsFinder>,
-    pub query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
-    pub properties_source: Arc<dyn ports::PropertiesSource>,
 
     pub cmd: Command,
 }
-
-
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct Kafka {}
 
 
 impl PreparedCommand {
@@ -28,18 +21,6 @@ impl PreparedCommand {
                 config,
                 topics_matcher,
                 criteria) => {
-                let properties = self.properties_source.load(
-                    config.as_ref().as_ref().unwrap().location.as_path());
-
-                let kafka: Kafka = properties
-                    .expect("properties are present")
-                    .properties_by("kafka")
-                    .expect("kafka is defined")
-                    .as_ref()
-                    .try_collect()
-                    .expect("structure is wrong");
-
-                println!("Kafka :{}", serde_json::to_string(&kafka).unwrap_or("Ups".to_string()).as_str() );
                 self.execute_query_by_key(topics_matcher, criteria)
             }
             _ => self.progress_notifier.notify("Command not found"),
@@ -48,11 +29,13 @@ impl PreparedCommand {
 
 
     fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
-        let t = self.topics_finder
-            .find_by(topics_matcher)
-            .map(|topic| self.query_range_estimator.estimate(&topic, &QueryRange::Whole))
+        let topics_finder = self.configured_context.topics_finder();
+        let query_range_estimator  = self.configured_context.query_range_estimator();
+        let record_finder = self.configured_context.record_finder();
+        let t = topics_finder.find_by( topics_matcher)
+            .map(|topic| query_range_estimator.estimate(&topic, &QueryRange::Whole))
             .map(|query_range| self.initiate_query(query_range))
-            .map(|query| query.resulted_with(self.record_finder.find_by(query.topic_name())))
+            .map(|query| query.resulted_with(record_finder.find_by(query.topic_name())))
             .flat_map(|result| result.to_presentable())
             .for_each(|f| {
                 f();

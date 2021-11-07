@@ -1,4 +1,4 @@
-use shaku::Component;
+use shaku;
 
 use crate::domain::model::{Count, EstimatedQueryRange, QueryRange, Topic};
 use crate::domain::ports;
@@ -16,6 +16,6 @@ impl ports::QueryRangeEstimator for KafkaQueryRangeEstimator {
     }
 }
 
-#[derive(Component)]
+#[derive(shaku::Component)]
 #[shaku(interface = ports::QueryRangeEstimator)]
 pub struct KafkaQueryRangeEstimator {}

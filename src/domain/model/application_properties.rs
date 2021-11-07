@@ -1,14 +1,6 @@
-use std::time::Duration;
-
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::domain::model::K4QError;
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct KafkaProperties {
-    bootstrap: BootstrapProperties,
-    message: MessageProperties,
-}
 
 pub trait ApplicationProperties {
     fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError>;
@@ -58,15 +50,4 @@ impl<T> ApplicationConfig<T>
     pub fn new(config: T) -> Self {
         ApplicationConfig { config }
     }
-}
-
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct BootstrapProperties {
-    servers: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct MessageProperties {
-    timeout: Duration,
 }

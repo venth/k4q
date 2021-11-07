@@ -35,7 +35,11 @@ pub trait ConfiguredContextFactory: Interface {
     fn create(&self, properties: &dyn ApplicationProperties) -> Box<dyn ConfiguredContext>;
 }
 
-pub trait ConfiguredContext: TopicsFinder + QueryRangeEstimator + RecordFinder {}
+pub trait ConfiguredContext {
+    fn topics_finder(&self) -> Box<dyn TopicsFinder>;
+    fn query_range_estimator(&self) -> Box<dyn QueryRangeEstimator>;
+    fn record_finder(&self) -> Box<dyn RecordFinder>;
+}
 
 pub trait PropertiesSource: Interface {
     fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError>;
