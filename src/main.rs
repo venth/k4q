@@ -3,6 +3,7 @@ mod cli;
 mod kafka;
 mod console;
 mod properties;
+mod monads;
 
 fn main() {
     let app_module = domain::module(
