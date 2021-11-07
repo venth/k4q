@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use home::home_dir;
 use shaku::Component;
 
 use crate::domain::model::Command;

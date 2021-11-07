@@ -36,9 +36,9 @@ pub trait ConfiguredContextFactory: Interface {
 }
 
 pub trait ConfiguredContext {
-    fn topics_finder(&self) -> Box<dyn TopicsFinder>;
-    fn query_range_estimator(&self) -> Box<dyn QueryRangeEstimator>;
-    fn record_finder(&self) -> Box<dyn RecordFinder>;
+    fn topics_finder(&self) -> Arc<dyn TopicsFinder>;
+    fn query_range_estimator(&self) -> Arc<dyn QueryRangeEstimator>;
+    fn record_finder(&self) -> Arc<dyn RecordFinder>;
 }
 
 pub trait PropertiesLocationProvider: Interface {
