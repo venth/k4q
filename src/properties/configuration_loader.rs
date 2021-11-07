@@ -8,10 +8,10 @@ use crate::domain::model::{ApplicationConfig, ApplicationProperties, Collectable
 use crate::domain::ports;
 
 #[derive(shaku::Component)]
-#[shaku(interface = ports::PropertiesSource)]
+#[shaku(interface = ports::PropertiesLoader)]
 pub struct ConfigurationLoader {}
 
-impl ports::PropertiesSource for ConfigurationLoader {
+impl ports::PropertiesLoader for ConfigurationLoader {
     fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError> {
         Config::default()
             .with_merged(config::File::with_name(config_location.to_str().unwrap()))

@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::Arc;
 
@@ -41,6 +41,10 @@ pub trait ConfiguredContext {
     fn record_finder(&self) -> Box<dyn RecordFinder>;
 }
 
-pub trait PropertiesSource: Interface {
+pub trait PropertiesLocationProvider: Interface {
+    fn provide(&self, args: &Vec<&str>) -> Option<PathBuf>;
+}
+
+pub trait PropertiesLoader: Interface {
     fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError>;
 }

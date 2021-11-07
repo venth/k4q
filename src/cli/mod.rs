@@ -8,6 +8,7 @@ use crate::domain;
 mod cli_parser;
 mod command_selector;
 mod command_recognizer;
+mod properties_location_provider;
 
 module! {
     pub CliModule: domain::CliModule {
@@ -15,6 +16,7 @@ module! {
             cli_parser::ClapCliParserFactory,
             key_equals_value::Matcher,
             command_recognizer::CliCommandRecognizer,
+            properties_location_provider::CliPropertiesLocationProvider,
         ],
         providers = [],
     }

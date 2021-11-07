@@ -1,21 +1,16 @@
 use std::iter::FromIterator;
 
 use clap::ArgMatches;
-use home::home_dir;
 use shaku;
 use shaku::Component;
 
 use crate::cli::command_selector::CommandSelector;
-use crate::domain::model::{Command, ConfigurationSetup, TopicsMatcherType};
+use crate::domain::model::{Command, TopicsMatcherType};
 use crate::domain::model;
 use crate::domain::model::RecordKey;
 
 impl CommandSelector for Matcher {
     fn select_by<'a>(&self, matched: ArgMatches) -> Option<Command> {
-        let kafka_config = home_dir()
-            .map(|p| p.join(".k4q/config.yaml"))
-            .map(|p| ConfigurationSetup { location: p });
-
         let query_topics: Option<Vec<String>> = matched
             .subcommand_matches("query")
             .and_then(|m| m.values_of("topics"))
@@ -39,7 +34,6 @@ impl CommandSelector for Matcher {
             .map(|(op, v)| model::key_equals_value(RecordKey::from(v)))
             .zip(query_topics)
             .map(|(crit, topics)| Command::QueryByKey(
-                Box::new(kafka_config),
                 TopicsMatcherType::DIRECT(topics),
                 crit))
     }

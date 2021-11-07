@@ -21,7 +21,10 @@ pub struct AppImpl {
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
 
     #[shaku(inject)]
-    properties_source: Arc<dyn ports::PropertiesSource>,
+    properties_location_provider: Arc<dyn ports::PropertiesLocationProvider>,
+
+    #[shaku(inject)]
+    properties_loader: Arc<dyn ports::PropertiesLoader>,
 }
 
 impl service::App for AppImpl {
@@ -33,11 +36,12 @@ impl service::App for AppImpl {
 
 impl AppImpl {
     fn command_of(&self, args: &&Vec<&str>) -> PreparedCommand {
-        let kafka_config = home_dir()
-            .map(|p| p.join(".k4q/config.yaml"))
-            .expect("cannot find config file - ups");
+        let kafka_config = self.properties_location_provider
+            .as_ref()
+            .provide(args)
+            .expect("cannot determine properties file location");
 
-        let props = self.properties_source.load(&kafka_config)
+        let props = self.properties_loader.load(&kafka_config)
             .expect("cannot load props");
         let  configured_context: Arc<dyn ports::ConfiguredContext> = self.configured_context_factory.clone()
             .create(props.as_ref())

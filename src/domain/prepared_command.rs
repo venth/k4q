@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use futures::{future, stream, Stream, StreamExt};
 
-use crate::domain::model::{CollectableProperties, Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
@@ -18,7 +18,6 @@ impl PreparedCommand {
     pub fn execute(&self) {
         match &self.cmd {
             Command::QueryByKey(
-                config,
                 topics_matcher,
                 criteria) => {
                 self.execute_query_by_key(topics_matcher, criteria)

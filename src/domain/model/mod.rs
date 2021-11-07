@@ -2,7 +2,6 @@ pub use self::application_properties::ApplicationConfig;
 pub use self::application_properties::ApplicationProperties;
 pub use self::application_properties::CollectableProperties;
 pub use self::command::Command;
-pub use self::command::ConfigurationSetup;
 pub use self::count::Count;
 pub use self::criteria::Criteria;
 pub use self::criteria::key_equals_value;
