@@ -1,8 +1,13 @@
 use std::sync::Arc;
 
-use crate::domain::model::ApplicationProperties;
+use rdkafka::ClientConfig;
+use rdkafka::config::RDKafkaLogLevel;
+use rdkafka::consumer::StreamConsumer;
+
+use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt};
 use crate::domain::ports;
 use crate::domain::ports::{QueryRangeEstimator, RecordFinder, TopicsFinder};
+use crate::kafka::properties::KafkaProperties;
 
 #[derive(shaku::Component)]
 #[shaku(interface = ports::ConfiguredContextFactory)]
@@ -37,7 +42,26 @@ impl ports::ConfiguredContext for KafkaConfiguredContext {
 }
 
 impl ports::ConfiguredContextFactory for KafkaConfiguredContextFactory {
-    fn create(&self, _properties: &dyn ApplicationProperties) -> Box<dyn ports::ConfiguredContext> {
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Box<dyn ports::ConfiguredContext> {
+        let config: KafkaProperties = properties
+            .properties_by("kafka")
+            .expect("something wrong")
+            .as_ref()
+            .try_collect()
+            .expect("wrong, wrong");
+
+        let consumer: StreamConsumer = ClientConfig::new()
+            .set("group.id", config.group.id)
+            .set("bootstrap.servers", config.bootstrap.servers.join(","))
+            .set("enable.partition.eof", "false")
+            .set("session.timeout.ms", "6000")
+            .set("enable.auto.commit", "true")
+            //.set("statistics.interval.ms", "30000")
+            //.set("auto.offset.reset", "smallest")
+            .set_log_level(RDKafkaLogLevel::Debug)
+            .create()
+            .expect("Consumer creation failed");
+
         Box::new(KafkaConfiguredContext {
             record_finder: self.record_finder.clone(),
             topic_finder: self.topic_finder.clone(),

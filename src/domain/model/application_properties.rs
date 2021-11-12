@@ -1,53 +1,26 @@
+use erased_serde::Deserializer;
 use serde::Deserialize;
 
 use crate::domain::model::K4QError;
 
 pub trait ApplicationProperties {
     fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError>;
+    fn deserializer<'de>(&self) -> Box<dyn Deserializer<'de>>;
 }
 
 
-pub trait CollectableProperties {
-    fn try_collect<'de, T>(self) -> Result<T, K4QError> where T: Sized + Deserialize<'de>;
-}
-
-
-impl<T> CollectableProperties for ApplicationConfig<T> where
-    T: CollectableProperties + ApplicationProperties {
-    fn try_collect<'de, V>(self) -> Result<V, K4QError> where V: Sized + Deserialize<'de> {
-        self.config
-            .try_collect()
-    }
-}
-
-impl CollectableProperties for &dyn ApplicationProperties {
+pub trait ApplicationPropertiesExt {
     fn try_collect<'de, T>(self) -> Result<T, K4QError>
-        where
-            Self: CollectableProperties, T: Sized + Deserialize<'de>
+        where Self: Sized,
+              T: Deserialize<'de>;
+}
+
+impl ApplicationPropertiesExt for &dyn ApplicationProperties {
+    fn try_collect<'de, O>(self) -> Result<O, K4QError>
+        where Self: Sized,
+              O: Deserialize<'de>
     {
-        self.try_collect()
-    }
-}
-
-impl<T: ApplicationProperties + CollectableProperties> ApplicationProperties for ApplicationConfig<T> {
-    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
-        self.config.properties_by(prefix)
-    }
-}
-
-
-pub struct ApplicationConfig<T>
-    where
-        T: CollectableProperties + ApplicationProperties,
-{
-    config: T,
-}
-
-impl<T> ApplicationConfig<T>
-    where
-        T: CollectableProperties + ApplicationProperties,
-{
-    pub fn new(config: T) -> Self {
-        ApplicationConfig { config }
+        O::deserialize(self.deserializer())
+            .map_err(|e| K4QError::ConfigError(format!("{:?}", e)))
     }
 }

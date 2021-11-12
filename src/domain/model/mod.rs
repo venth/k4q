@@ -1,6 +1,5 @@
-pub use self::application_properties::ApplicationConfig;
 pub use self::application_properties::ApplicationProperties;
-pub use self::application_properties::CollectableProperties;
+pub use self::application_properties::ApplicationPropertiesExt;
 pub use self::command::Command;
 pub use self::count::Count;
 pub use self::criteria::Criteria;

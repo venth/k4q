@@ -1,19 +1,18 @@
-use std::time::Duration;
-
 use serde;
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct KafkaProperties {
-    bootstrap: BootstrapProperties,
-    message: MessageProperties,
+    pub bootstrap: BootstrapProperties,
+    pub group: Group,
+
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize)]
 pub struct BootstrapProperties {
-    servers: Vec<String>,
+    pub servers: Vec<String>,
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct MessageProperties {
-    timeout: Duration,
+#[derive(Debug, serde::Deserialize)]
+pub struct Group {
+    pub id: String,
 }

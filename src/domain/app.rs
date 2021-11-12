@@ -43,7 +43,7 @@ impl AppImpl {
         let props = self.properties_loader.load(&kafka_config)
             .expect("cannot load props");
         let  configured_context: Arc<dyn ports::ConfiguredContext> = self.configured_context_factory.clone()
-            .create(props.as_ref())
+            .create(props)
             .into();
         self.command_recognizer
             .recognize(&args)

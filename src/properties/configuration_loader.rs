@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use config::{Config, ConfigError, Source, Value};
-use serde::Deserialize;
+use erased_serde::Deserializer;
 
-use crate::domain::model::{ApplicationConfig, ApplicationProperties, CollectableProperties, K4QError};
+use crate::domain::model::{ApplicationProperties, K4QError};
 use crate::domain::ports;
 
 #[derive(shaku::Component)]
@@ -15,15 +15,11 @@ impl ports::PropertiesLoader for ConfigurationLoader {
     fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError> {
         Config::default()
             .with_merged(config::File::with_name(config_location.to_str().unwrap()))
-            .map(|c| PartialConfig { config: c })
-            .map(ApplicationConfig::<PartialConfig>::new)
+            .map(PartialConfig::new)
             .map(Box::new)
             .map(|c| c as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
             .map_err(K4QError::ConfigError)
-        // .and_then(|config| config.try_into())
-        // .map_err(ConfigurationLoader::description_of)
-        // .map_err(K4QError::ConfigError)
     }
 }
 
@@ -33,6 +29,10 @@ struct PartialConfig {
 }
 
 impl PartialConfig {
+    pub fn new(config: Config) -> Self {
+        Self { config }
+    }
+
     pub fn error_description_in_context<'a>(context: &'a str) -> (impl Fn(String) -> String + 'a)
     {
         move |description| format!(
@@ -49,21 +49,15 @@ impl ApplicationProperties for PartialConfig {
             .get_table(prefix)
             .map(PartialConfigSource::new)
             .and_then(|c| Config::new().with_merged(c))
-            .map(|c| PartialConfig { config: c })
-            .map(ApplicationConfig::<PartialConfig>::new)
+            .map(PartialConfig::new)
             .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
             .map_err(contextual_error)
             .map_err(K4QError::ConfigError)
     }
-}
 
-impl CollectableProperties for PartialConfig {
-    fn try_collect<'de, T>(self) -> Result<T, K4QError> where T: Sized + Deserialize<'de> {
-        self.config
-            .try_into()
-            .map_err(ConfigurationLoader::description_of)
-            .map_err(K4QError::ConfigError)
+    fn deserializer<'de>(&self) -> Box<dyn erased_serde::Deserializer<'de>> {
+        Box::new(<dyn Deserializer>::erase(self.config.clone()))
     }
 }
 

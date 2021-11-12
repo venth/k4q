@@ -19,7 +19,6 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
                     .map(move |topic_name| model::Topic::new(topic_name, stub_partitions(1)))
                     .boxed()
             }
-            _ => { stream::empty::<model::Topic>().boxed() }
         }
     }
 }

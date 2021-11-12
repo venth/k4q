@@ -5,7 +5,8 @@ mod console;
 mod properties;
 mod monads;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let app_module = domain::module(
         cli::module(),
         kafka::module(),
