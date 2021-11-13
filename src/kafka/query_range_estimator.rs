@@ -1,4 +1,4 @@
-use shaku;
+use rdkafka::consumer::StreamConsumer;
 
 use crate::domain::model::{Count, EstimatedQueryRange, QueryRange, Topic};
 use crate::domain::ports;
@@ -16,6 +16,12 @@ impl ports::QueryRangeEstimator for KafkaQueryRangeEstimator {
     }
 }
 
-#[derive(shaku::Component)]
-#[shaku(interface = ports::QueryRangeEstimator)]
-pub struct KafkaQueryRangeEstimator {}
+impl KafkaQueryRangeEstimator {
+    pub fn new(consumer: StreamConsumer) -> Self {
+        Self { consumer }
+    }
+}
+
+pub struct KafkaQueryRangeEstimator {
+    consumer: StreamConsumer,
+}

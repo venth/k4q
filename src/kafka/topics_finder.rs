@@ -1,14 +1,14 @@
 use std::pin::Pin;
 
 use futures::{stream, Stream, StreamExt};
-use shaku::Component;
+use rdkafka::consumer::StreamConsumer;
 
 use crate::domain::model;
 use crate::domain::ports;
 
-#[derive(Component)]
-#[shaku(interface = ports::TopicsFinder)]
-pub struct KafkaTopicsFinder {}
+pub struct KafkaTopicsFinder {
+    consumer: StreamConsumer,
+}
 
 impl ports::TopicsFinder for KafkaTopicsFinder {
     fn find_by<'a>(&self, topics_matcher_type: &'a model::TopicsMatcherType) -> Pin<Box<dyn Stream<Item=model::Topic> + 'a>> {
@@ -20,6 +20,12 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
                     .boxed()
             }
         }
+    }
+}
+
+impl KafkaTopicsFinder {
+    pub fn new(consumer: StreamConsumer) -> Self {
+        Self { consumer }
     }
 }
 

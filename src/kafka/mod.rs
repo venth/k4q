@@ -15,9 +15,6 @@ module! {
     pub KafkaModule: domain::KafkaModule {
         components = [
             configured_context::KafkaConfiguredContextFactory,
-            record_finder::KafkaRecordFinder,
-            topics_finder::KafkaTopicsFinder,
-            query_range_estimator::KafkaQueryRangeEstimator,
             stream_consumer_factory::KafkaStreamConsumerFactory,
         ],
         providers = [],

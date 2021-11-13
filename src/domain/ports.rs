@@ -32,7 +32,7 @@ pub trait QueryRangeEstimator: Interface {
 }
 
 pub trait ConfiguredContextFactory: Interface {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Box<dyn ConfiguredContext>;
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ConfiguredContext>, K4QError>;
 }
 
 pub trait ConfiguredContext {

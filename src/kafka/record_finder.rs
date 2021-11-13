@@ -2,7 +2,7 @@ use std::pin::Pin;
 
 use futures::{Stream, StreamExt};
 use futures::stream;
-use shaku::Component;
+use rdkafka::consumer::StreamConsumer;
 
 use crate::domain::model::Offset;
 use crate::domain::model::PartitionId;
@@ -30,8 +30,12 @@ impl ports::RecordFinder for KafkaRecordFinder {
 }
 
 
-#[derive(Component)]
-#[shaku(interface = ports::RecordFinder)]
+impl KafkaRecordFinder {
+    pub fn new(consumer: StreamConsumer) -> Self {
+        Self { consumer }
+    }
+}
+
 pub struct KafkaRecordFinder {
-    
+    consumer: StreamConsumer,
 }

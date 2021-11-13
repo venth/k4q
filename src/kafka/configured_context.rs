@@ -4,32 +4,28 @@ use rdkafka::ClientConfig;
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::StreamConsumer;
 
-use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt};
+use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt, K4QError};
 use crate::domain::ports;
-use crate::domain::ports::{QueryRangeEstimator, RecordFinder, TopicsFinder};
+use crate::domain::ports::{ConfiguredContext, QueryRangeEstimator, RecordFinder, TopicsFinder};
 use crate::kafka::properties::KafkaProperties;
+use crate::kafka::query_range_estimator::KafkaQueryRangeEstimator;
+use crate::kafka::record_finder::KafkaRecordFinder;
+use crate::kafka::topics_finder::KafkaTopicsFinder;
 
 #[derive(shaku::Component)]
 #[shaku(interface = ports::ConfiguredContextFactory)]
-pub struct KafkaConfiguredContextFactory {
-    #[shaku(inject)]
-    record_finder: Arc<dyn ports::RecordFinder>,
-    #[shaku(inject)]
-    topic_finder: Arc<dyn ports::TopicsFinder>,
-    #[shaku(inject)]
-    query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
-}
+pub struct KafkaConfiguredContextFactory {}
 
 pub struct KafkaConfiguredContext {
     record_finder: Arc<dyn ports::RecordFinder>,
-    topic_finder: Arc<dyn ports::TopicsFinder>,
+    topics_finder: Arc<dyn ports::TopicsFinder>,
     query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
 }
 
 
 impl ports::ConfiguredContext for KafkaConfiguredContext {
     fn topics_finder(&self) -> Arc<dyn TopicsFinder> {
-        self.topic_finder.clone()
+        self.topics_finder.clone()
     }
 
     fn query_range_estimator(&self) -> Arc<dyn QueryRangeEstimator> {
@@ -42,17 +38,34 @@ impl ports::ConfiguredContext for KafkaConfiguredContext {
 }
 
 impl ports::ConfiguredContextFactory for KafkaConfiguredContextFactory {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Box<dyn ports::ConfiguredContext> {
-        let config: KafkaProperties = properties
-            .properties_by("kafka")
-            .expect("something wrong")
-            .as_ref()
-            .try_collect()
-            .expect("wrong, wrong");
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::ConfiguredContext>, K4QError> {
+        Self::read_kafka_configuration_from(properties)
+            .and_then(|config|
+                Self::create_record_finder(&config)
+                    .and_then(|f| Self::create_topics_finder(&config)
+                        .and_then(|tf| Self::create_query_range_estimator(&config)
+                            .map(|qe| (f,tf, qe)))))
+            .map(|(record_finder, topics_finder, query_range_estimator)| KafkaConfiguredContext {
+                record_finder,
+                topics_finder,
+                query_range_estimator,
+            })
+            .map(Box::new)
+            .map(|t| t as Box<dyn ConfiguredContext>)
+    }
+}
 
-        let consumer: StreamConsumer = ClientConfig::new()
-            .set("group.id", config.group.id)
-            .set("bootstrap.servers", config.bootstrap.servers.join(","))
+impl KafkaConfiguredContextFactory {
+    fn read_kafka_configuration_from(properties: Box<dyn ApplicationProperties>) -> Result<KafkaProperties, K4QError> {
+        properties
+            .properties_by("kafka")
+            .and_then(|props| props.as_ref().try_collect())
+    }
+
+    fn create_kafka_consumer(props: &KafkaProperties) -> Result<StreamConsumer, K4QError> {
+        ClientConfig::new()
+            .set("group.id", props.group.id.to_string())
+            .set("bootstrap.servers", props.bootstrap.servers.join(","))
             .set("enable.partition.eof", "false")
             .set("session.timeout.ms", "6000")
             .set("enable.auto.commit", "true")
@@ -60,12 +73,27 @@ impl ports::ConfiguredContextFactory for KafkaConfiguredContextFactory {
             //.set("auto.offset.reset", "smallest")
             .set_log_level(RDKafkaLogLevel::Debug)
             .create()
-            .expect("Consumer creation failed");
+            .map_err(|e| K4QError::KafkaError(e.to_string()))
+    }
 
-        Box::new(KafkaConfiguredContext {
-            record_finder: self.record_finder.clone(),
-            topic_finder: self.topic_finder.clone(),
-            query_range_estimator: self.query_range_estimator.clone(),
-        })
+    fn create_record_finder(config: &KafkaProperties) -> Result<Arc<dyn RecordFinder>, K4QError> {
+        Self::create_kafka_consumer(config)
+            .map(KafkaRecordFinder::new)
+            .map(Arc::new)
+            .map(|t| t as Arc<dyn RecordFinder>)
+    }
+
+    fn create_topics_finder(config: &KafkaProperties) -> Result<Arc<dyn TopicsFinder>, K4QError> {
+        Self::create_kafka_consumer(config)
+            .map(KafkaTopicsFinder::new)
+            .map(Arc::new)
+            .map(|t| t as Arc<dyn TopicsFinder>)
+    }
+
+    fn create_query_range_estimator(config: &KafkaProperties) -> Result<Arc<dyn QueryRangeEstimator>, K4QError> {
+        Self::create_kafka_consumer(config)
+            .map(KafkaQueryRangeEstimator::new)
+            .map(Arc::new)
+            .map(|t| t as Arc<dyn QueryRangeEstimator>)
     }
 }
