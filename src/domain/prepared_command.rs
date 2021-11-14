@@ -7,7 +7,7 @@ use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, Que
 use crate::domain::ports;
 
 pub struct PreparedCommand {
-    pub configured_context: Arc<dyn ports::ConfiguredContext>,
+    pub configured_context: Arc<dyn ports::KafkaSession>,
     pub progress_notifier: Arc<dyn ports::ProgressNotifier>,
 
     pub cmd: Command,

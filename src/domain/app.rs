@@ -14,7 +14,7 @@ pub struct AppImpl {
     command_recognizer: Arc<dyn ports::CommandRecognizer>,
 
     #[shaku(inject)]
-    configured_context_factory: Arc<dyn ports::ConfiguredContextFactory>,
+    configured_context_factory: Arc<dyn ports::KafkaSessionFactory>,
 
     #[shaku(inject)]
     progress_notifier: Arc<dyn ports::ProgressNotifier>,
@@ -42,7 +42,7 @@ impl AppImpl {
 
         let props = self.properties_loader.load(&kafka_config)
             .expect("cannot load props");
-        let  configured_context: Arc<dyn ports::ConfiguredContext> = self.configured_context_factory.clone()
+        let  configured_context: Arc<dyn ports::KafkaSession> = self.configured_context_factory.clone()
             .create(props)
             .expect("cannot configure kafka connection")
             .into();

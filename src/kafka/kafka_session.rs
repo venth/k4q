@@ -7,24 +7,24 @@ use rdkafka::consumer::StreamConsumer;
 
 use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt, K4QError};
 use crate::domain::ports;
-use crate::domain::ports::{ConfiguredContext, QueryRangeEstimator, RecordFinder, TopicsFinder};
+use crate::domain::ports::{KafkaSession, QueryRangeEstimator, RecordFinder, TopicsFinder};
 use crate::kafka::properties::KafkaProperties;
 use crate::kafka::query_range_estimator::KafkaQueryRangeEstimator;
 use crate::kafka::record_finder::KafkaRecordFinder;
 use crate::kafka::topics_finder::KafkaTopicsFinder;
 
 #[derive(shaku::Component)]
-#[shaku(interface = ports::ConfiguredContextFactory)]
-pub struct KafkaConfiguredContextFactory {}
+#[shaku(interface = ports::KafkaSessionFactory)]
+pub struct RdKafkaSessionFactory {}
 
-pub struct KafkaConfiguredContext {
+pub struct RdKafkaSession {
     record_finder: Arc<dyn ports::RecordFinder>,
     topics_finder: Arc<dyn ports::TopicsFinder>,
     query_range_estimator: Arc<dyn ports::QueryRangeEstimator>,
 }
 
 
-impl ports::ConfiguredContext for KafkaConfiguredContext {
+impl ports::KafkaSession for RdKafkaSession {
     fn topics_finder(&self) -> Arc<dyn TopicsFinder> {
         self.topics_finder.clone()
     }
@@ -38,26 +38,24 @@ impl ports::ConfiguredContext for KafkaConfiguredContext {
     }
 }
 
-impl ports::ConfiguredContextFactory for KafkaConfiguredContextFactory {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::ConfiguredContext>, K4QError> {
-        (m! {
+impl ports::KafkaSessionFactory for RdKafkaSessionFactory {
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::KafkaSession>, K4QError> {
+        m! {
             config <- Self::read_kafka_configuration_from(properties);
             record_finder <- Self::create_record_finder(&config);
             topics_finder <- Self::create_topics_finder(&config);
             query_range_estimator <- Self::create_query_range_estimator(&config);
 
-            return KafkaConfiguredContext {
+            return Box::new(RdKafkaSession {
                 record_finder,
                 topics_finder,
                 query_range_estimator,
-            };
-        })
-            .map(Box::new)
-            .map(|t| t as Box<dyn ConfiguredContext>)
+            }) as Box<dyn KafkaSession>;
+        }
     }
 }
 
-impl KafkaConfiguredContextFactory {
+impl RdKafkaSessionFactory {
     fn read_kafka_configuration_from(properties: Box<dyn ApplicationProperties>) -> Result<KafkaProperties, K4QError> {
         properties
             .properties_by("kafka")

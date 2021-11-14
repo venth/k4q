@@ -31,11 +31,11 @@ pub trait QueryRangeEstimator: Interface {
     fn estimate(&self, topic: &Topic, query_range: &QueryRange) -> EstimatedQueryRange;
 }
 
-pub trait ConfiguredContextFactory: Interface {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ConfiguredContext>, K4QError>;
+pub trait KafkaSessionFactory: Interface {
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn KafkaSession>, K4QError>;
 }
 
-pub trait ConfiguredContext {
+pub trait KafkaSession {
     fn topics_finder(&self) -> Arc<dyn TopicsFinder>;
     fn query_range_estimator(&self) -> Arc<dyn QueryRangeEstimator>;
     fn record_finder(&self) -> Arc<dyn RecordFinder>;

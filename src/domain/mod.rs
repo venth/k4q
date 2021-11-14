@@ -13,7 +13,7 @@ mod prepared_command;
 
 pub trait CliModule: HasComponent<dyn ports::CommandRecognizer> + HasComponent<dyn ports::PropertiesLocationProvider> {}
 
-pub trait KafkaModule: HasComponent<dyn ports::ConfiguredContextFactory> {}
+pub trait KafkaModule: HasComponent<dyn ports::KafkaSessionFactory> {}
 
 pub trait ConsoleModule: HasComponent<dyn ports::ProgressNotifier> {}
 
@@ -32,7 +32,7 @@ module! {
         },
 
         use dyn KafkaModule {
-            components = [dyn ports::ConfiguredContextFactory],
+            components = [dyn ports::KafkaSessionFactory],
             providers = [],
         },
 

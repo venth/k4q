@@ -9,12 +9,12 @@ mod topics_finder;
 mod query_range_estimator;
 mod stream_consumer_factory;
 mod properties;
-mod configured_context;
+mod kafka_session;
 
 module! {
     pub KafkaModule: domain::KafkaModule {
         components = [
-            configured_context::KafkaConfiguredContextFactory,
+            kafka_session::RdKafkaSessionFactory,
             stream_consumer_factory::KafkaStreamConsumerFactory,
         ],
         providers = [],
