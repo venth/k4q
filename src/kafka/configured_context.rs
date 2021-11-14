@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use do_notation::m;
 use rdkafka::ClientConfig;
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::StreamConsumer;
@@ -39,17 +40,18 @@ impl ports::ConfiguredContext for KafkaConfiguredContext {
 
 impl ports::ConfiguredContextFactory for KafkaConfiguredContextFactory {
     fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::ConfiguredContext>, K4QError> {
-        Self::read_kafka_configuration_from(properties)
-            .and_then(|config|
-                Self::create_record_finder(&config)
-                    .and_then(|f| Self::create_topics_finder(&config)
-                        .and_then(|tf| Self::create_query_range_estimator(&config)
-                            .map(|qe| (f,tf, qe)))))
-            .map(|(record_finder, topics_finder, query_range_estimator)| KafkaConfiguredContext {
+        (m! {
+            config <- Self::read_kafka_configuration_from(properties);
+            record_finder <- Self::create_record_finder(&config);
+            topics_finder <- Self::create_topics_finder(&config);
+            query_range_estimator <- Self::create_query_range_estimator(&config);
+
+            return KafkaConfiguredContext {
                 record_finder,
                 topics_finder,
                 query_range_estimator,
-            })
+            };
+        })
             .map(Box::new)
             .map(|t| t as Box<dyn ConfiguredContext>)
     }

@@ -19,6 +19,7 @@ shaku = "0.6.1"
 futures = "0.3"
 config = "0.11"
 tokio = { version = "1", features = ["full"] }
+do-notation = "0.1"
 
 [dev-dependencies]
 # latest version - 0.12.0 doesn't contain kafka, so I used latest dev instead
