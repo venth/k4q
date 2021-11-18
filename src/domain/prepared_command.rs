@@ -1,9 +1,9 @@
 use std::pin::Pin;
 use std::sync::Arc;
 
-use futures::{future, stream, Stream, StreamExt};
+use futures::{future, stream, Stream, StreamExt, TryStreamExt};
 
-use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, EstimatedQueryRange, K4QError, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
@@ -32,14 +32,17 @@ impl PreparedCommand {
         let query_range_estimator  = self.configured_context.query_range_estimator();
         let record_finder = self.configured_context.record_finder();
         let t = topics_finder.find_by( topics_matcher)
-            .map(|topic| query_range_estimator.estimate(&topic, &QueryRange::Whole))
-            .map(|query_range| self.initiate_query(query_range))
-            .map(|query| query.resulted_with(record_finder.find_by(query.topic_name())))
-            .flat_map(|result| result.to_presentable())
-            .for_each(|f| {
-                f();
-                future::ready(())
+            .map_ok(|topic| query_range_estimator.estimate(&topic, &QueryRange::Whole))
+            .map_ok(|query_range| self.initiate_query(query_range))
+            .map_ok(|query| query.resulted_with(record_finder.find_by(query.topic_name())))
+            .try_for_each_concurrent(10, |n: QueryResult| async {
+                Ok(println!("{:?}", 1))
             });
+            // .flat_map(|result| r.to_presentable())
+            // .for_each(|f| {
+            //     f();
+            //     future::ready(())
+            // });
 
         futures::executor::block_on(t);
     }

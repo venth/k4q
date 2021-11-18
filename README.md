@@ -19,6 +19,6 @@ write my own tool.
 - [immutable datastructures](https://github.com/bodil/im-rs) 
 - [Layered configuration system](https://github.com/mehcode/config-rs)
 ## Tools
-- [kafka docker-compose](https://github.com/wurstmeister/kafka-docker)
+- [kafka docker-compose](https://lankydan.dev/running-kafka-locally-with-docker)
 ## Testing
 - [assert-cmd](https://github.com/assert-rs/assert_cmd)

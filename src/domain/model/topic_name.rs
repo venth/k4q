@@ -6,6 +6,11 @@ pub struct TopicName {
     value: String,
 }
 
+impl TopicName {
+    pub fn as_str(&self) -> &str {
+        self.value.as_str()
+    }
+}
 
 impl From<TopicName> for String {
     fn from(t: TopicName) -> Self {

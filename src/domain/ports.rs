@@ -3,6 +3,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use futures::Stream;
+use futures::stream::BoxStream;
 use shaku::Interface;
 
 use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4QError, QueryRange, Topic, TopicsMatcherType};
@@ -24,7 +25,7 @@ pub trait ProgressNotifier: Interface {
 }
 
 pub trait TopicsFinder: Interface {
-    fn find_by<'a>(&self, topics_matcher_type: &'a TopicsMatcherType) -> Pin<Box<dyn Stream<Item=Topic> + 'a>>;
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4QError>>;
 }
 
 pub trait QueryRangeEstimator: Interface {
