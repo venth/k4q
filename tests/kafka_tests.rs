@@ -30,7 +30,7 @@ fn produces_records(producer: Arc<FutureProducer>) {
         });
 
 
-    let mut cmd = assert_cmd::Command::cargo_bin("k4q").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("k4fq").unwrap();
     cmd
         .arg("query")
         .arg("topic1,")

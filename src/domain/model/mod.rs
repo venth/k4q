@@ -5,7 +5,7 @@ pub use self::count::Count;
 pub use self::criteria::Criteria;
 pub use self::criteria::key_equals_value;
 pub use self::estimated_query_range::EstimatedQueryRange;
-pub use self::k4q_error::K4QError;
+pub use self::k4fq_error::K4fqError;
 pub use self::offset::Offset;
 pub use self::partition::Partition;
 pub use self::partition_id::PartitionId;
@@ -35,5 +35,5 @@ mod count;
 mod record_key;
 mod offset;
 mod application_properties;
-mod k4q_error;
+mod k4fq_error;
 

@@ -5,7 +5,7 @@ use rdkafka::ClientConfig;
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::StreamConsumer;
 
-use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt, K4QError};
+use crate::domain::model::{ApplicationProperties, ApplicationPropertiesExt, K4fqError};
 use crate::domain::ports;
 use crate::domain::ports::{KafkaSession, QueryRangeEstimator, RecordFinder, TopicsFinder};
 use crate::kafka::properties::KafkaProperties;
@@ -39,7 +39,7 @@ impl ports::KafkaSession for RdKafkaSession {
 }
 
 impl ports::KafkaSessionFactory for RdKafkaSessionFactory {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::KafkaSession>, K4QError> {
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn ports::KafkaSession>, K4fqError> {
         m! {
             config <- Self::read_kafka_configuration_from(properties);
             record_finder <- Self::create_record_finder(&config);
@@ -56,13 +56,13 @@ impl ports::KafkaSessionFactory for RdKafkaSessionFactory {
 }
 
 impl RdKafkaSessionFactory {
-    fn read_kafka_configuration_from(properties: Box<dyn ApplicationProperties>) -> Result<KafkaProperties, K4QError> {
+    fn read_kafka_configuration_from(properties: Box<dyn ApplicationProperties>) -> Result<KafkaProperties, K4fqError> {
         properties
             .properties_by("kafka")
             .and_then(|props| props.as_ref().try_collect())
     }
 
-    fn create_kafka_consumer(props: &KafkaProperties) -> Result<StreamConsumer, K4QError> {
+    fn create_kafka_consumer(props: &KafkaProperties) -> Result<StreamConsumer, K4fqError> {
         ClientConfig::new()
             .set("group.id", props.group.id.to_string())
             .set("bootstrap.servers", props.bootstrap.servers.join(","))
@@ -73,24 +73,24 @@ impl RdKafkaSessionFactory {
             //.set("auto.offset.reset", "smallest")
             .set_log_level(RDKafkaLogLevel::Debug)
             .create()
-            .map_err(|e| K4QError::KafkaError(e.to_string()))
+            .map_err(|e| K4fqError::KafkaError(e.to_string()))
     }
 
-    fn create_record_finder(config: &KafkaProperties) -> Result<Arc<dyn RecordFinder>, K4QError> {
+    fn create_record_finder(config: &KafkaProperties) -> Result<Arc<dyn RecordFinder>, K4fqError> {
         Self::create_kafka_consumer(config)
             .map(KafkaRecordFinder::new)
             .map(Arc::new)
             .map(|t| t as Arc<dyn RecordFinder>)
     }
 
-    fn create_topics_finder(config: &KafkaProperties) -> Result<Arc<dyn TopicsFinder>, K4QError> {
+    fn create_topics_finder(config: &KafkaProperties) -> Result<Arc<dyn TopicsFinder>, K4fqError> {
         Self::create_kafka_consumer(config)
             .map(KafkaTopicsFinder::new)
             .map(Arc::new)
             .map(|t| t as Arc<dyn TopicsFinder>)
     }
 
-    fn create_query_range_estimator(config: &KafkaProperties) -> Result<Arc<dyn QueryRangeEstimator>, K4QError> {
+    fn create_query_range_estimator(config: &KafkaProperties) -> Result<Arc<dyn QueryRangeEstimator>, K4fqError> {
         Self::create_kafka_consumer(config)
             .map(KafkaQueryRangeEstimator::new)
             .map(Arc::new)

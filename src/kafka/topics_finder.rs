@@ -7,7 +7,7 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
-use crate::domain::model::{K4QError, Topic, TopicName};
+use crate::domain::model::{K4fqError, Topic, TopicName};
 use crate::domain::ports;
 
 pub struct KafkaTopicsFinder {
@@ -16,7 +16,7 @@ pub struct KafkaTopicsFinder {
 }
 
 impl ports::TopicsFinder for KafkaTopicsFinder {
-    fn find_by<'a>(&'a self, topics_matcher_type: &'a model::TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4QError>> {
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a model::TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4fqError>> {
         match topics_matcher_type {
             model::TopicsMatcherType::DIRECT(topics) => {
                 stream::iter(topics)
@@ -33,12 +33,12 @@ impl KafkaTopicsFinder {
         Self { consumer, timeout: Duration::from_secs(2) }
     }
 
-    fn topic_by(&self, topic_name: TopicName) -> Result<Topic, K4QError> {
+    fn topic_by(&self, topic_name: TopicName) -> Result<Topic, K4fqError> {
         m! {
             let client = self.consumer.client();
             metadata <- self.fetch_metadata_for(&topic_name);
             let topic = metadata.topics().iter().next();
-            chosen_topic <- topic.ok_or(K4QError::KafkaError(format!("Cannot find topic: {:?}", topic_name)));
+            chosen_topic <- topic.ok_or(K4fqError::KafkaError(format!("Cannot find topic: {:?}", topic_name)));
             let partitions = self.fetch_partitions_for(&chosen_topic);
 
             Ok(Topic::new(topic_name, partitions))
@@ -51,11 +51,11 @@ impl KafkaTopicsFinder {
             .collect::<Vec<model::Partition>>()
     }
 
-    fn fetch_metadata_for(&self, topic_name: &TopicName) -> Result<Metadata, K4QError> {
+    fn fetch_metadata_for(&self, topic_name: &TopicName) -> Result<Metadata, K4fqError> {
         self.consumer
             .client()
             .fetch_metadata(Some(topic_name.as_str()), self.timeout)
-            .map_err(|e| K4QError::KafkaError(e.to_string()))
+            .map_err(|e| K4fqError::KafkaError(e.to_string()))
     }
 }
 

@@ -12,6 +12,6 @@ pub struct CliPropertiesLocationProvider {}
 impl ports::PropertiesLocationProvider for CliPropertiesLocationProvider {
     fn provide(&self, _args: &Vec<&str>) -> Option<PathBuf> {
         home_dir()
-            .map(|p| p.join(".k4q/config.yaml"))
+            .map(|p| p.join(".k4fq/config.yaml"))
     }
 }

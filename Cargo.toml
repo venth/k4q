@@ -1,5 +1,5 @@
 [package]
-name = "k4q"
+name = "k4fq"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.56.0"

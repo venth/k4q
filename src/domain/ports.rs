@@ -6,7 +6,7 @@ use futures::Stream;
 use futures::stream::BoxStream;
 use shaku::Interface;
 
-use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4QError, QueryRange, Topic, TopicsMatcherType};
+use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4fqError, QueryRange, Topic, TopicsMatcherType};
 use crate::domain::model::Progress;
 use crate::domain::model::Record;
 use crate::domain::model::TopicName;
@@ -25,7 +25,7 @@ pub trait ProgressNotifier: Interface {
 }
 
 pub trait TopicsFinder: Interface {
-    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4QError>>;
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4fqError>>;
 }
 
 pub trait QueryRangeEstimator: Interface {
@@ -33,7 +33,7 @@ pub trait QueryRangeEstimator: Interface {
 }
 
 pub trait KafkaSessionFactory: Interface {
-    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn KafkaSession>, K4QError>;
+    fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn KafkaSession>, K4fqError>;
 }
 
 pub trait KafkaSession {
@@ -47,5 +47,5 @@ pub trait PropertiesLocationProvider: Interface {
 }
 
 pub trait PropertiesLoader: Interface {
-    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError>;
+    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4fqError>;
 }

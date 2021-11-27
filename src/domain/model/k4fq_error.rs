@@ -4,21 +4,21 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-pub enum K4QError {
+pub enum K4fqError {
     ConfigError(String),
     KafkaError(String),
 }
 
-impl Display for K4QError {
+impl Display for K4fqError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            K4QError::ConfigError(message) => write!(f, "K4QError::ConfigError{{ message: {} }}", message),
-            K4QError::KafkaError(message) => write!(f, "K4QError::KafkaError{{ message: {} }}", message),
+            K4fqError::ConfigError(message) => write!(f, "K4fqError::ConfigError{{ message: {} }}", message),
+            K4fqError::KafkaError(message) => write!(f, "K4fqError::KafkaError{{ message: {} }}", message),
         }
 
     }
 }
 
-impl Error for K4QError {
+impl Error for K4fqError {
 
 }

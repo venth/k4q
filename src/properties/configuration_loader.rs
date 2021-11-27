@@ -4,7 +4,7 @@ use std::path::Path;
 use config::{Config, ConfigError, Source, Value};
 use erased_serde::Deserializer;
 
-use crate::domain::model::{ApplicationProperties, K4QError};
+use crate::domain::model::{ApplicationProperties, K4fqError};
 use crate::domain::ports;
 
 #[derive(shaku::Component)]
@@ -12,14 +12,14 @@ use crate::domain::ports;
 pub struct ConfigurationLoader {}
 
 impl ports::PropertiesLoader for ConfigurationLoader {
-    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4fqError> {
         Config::default()
             .with_merged(config::File::with_name(config_location.to_str().unwrap()))
             .map(PartialConfig::new)
             .map(Box::new)
             .map(|c| c as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
-            .map_err(K4QError::ConfigError)
+            .map_err(K4fqError::ConfigError)
     }
 }
 
@@ -42,7 +42,7 @@ impl PartialConfig {
 }
 
 impl ApplicationProperties for PartialConfig {
-    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4QError> {
+    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4fqError> {
         let contextual_error = PartialConfig::error_description_in_context(prefix);
 
         self.config
@@ -53,7 +53,7 @@ impl ApplicationProperties for PartialConfig {
             .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
             .map_err(contextual_error)
-            .map_err(K4QError::ConfigError)
+            .map_err(K4fqError::ConfigError)
     }
 
     fn deserializer<'de>(&self) -> Box<dyn erased_serde::Deserializer<'de>> {
