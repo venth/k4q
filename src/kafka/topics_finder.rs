@@ -1,9 +1,10 @@
 use std::time::Duration;
 
+use do_notation::m;
 use futures::{stream, StreamExt};
 use futures::stream::BoxStream;
 use rdkafka::consumer::{Consumer, StreamConsumer};
-use rdkafka::metadata::MetadataTopic;
+use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
 use crate::domain::model::{K4QError, Topic, TopicName};
@@ -33,12 +34,28 @@ impl KafkaTopicsFinder {
     }
 
     fn topic_by(&self, topic_name: TopicName) -> Result<Topic, K4QError> {
+        m! {
+            let client = self.consumer.client();
+            metadata <- self.fetch_metadata_for(&topic_name);
+            let topic = metadata.topics().iter().next();
+            chosen_topic <- topic.ok_or(K4QError::KafkaError(format!("Cannot find topic: {:?}", topic_name)));
+            let partitions = self.fetch_partitions_for(&chosen_topic);
+
+            Ok(Topic::new(topic_name, partitions))
+        }
+    }
+
+    fn fetch_partitions_for(&self, topic: &MetadataTopic) -> Vec<model::Partition> {
+        (1..=5)
+            .map(|id| stub_partition(id - 1, 0, 10))
+            .collect::<Vec<model::Partition>>()
+    }
+
+    fn fetch_metadata_for(&self, topic_name: &TopicName) -> Result<Metadata, K4QError> {
         self.consumer
             .client()
             .fetch_metadata(Some(topic_name.as_str()), self.timeout)
             .map_err(|e| K4QError::KafkaError(e.to_string()))
-            .and_then(|r| r.topics().first().map(MetadataTopic::name).map(ToString::to_string).ok_or(K4QError::KafkaError("Topic not found".to_string())))
-            .map(|t| model::Topic::new(TopicName::from(t.as_str()), stub_partitions(1)))
     }
 }
 

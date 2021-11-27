@@ -1,9 +1,9 @@
 use std::pin::Pin;
 use std::sync::Arc;
 
-use futures::{future, stream, Stream, StreamExt, TryStreamExt};
+use futures::{stream, Stream, StreamExt, TryStreamExt};
 
-use crate::domain::model::{Command, Criteria, EstimatedQueryRange, K4QError, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, EstimatedQueryRange, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
 
 pub struct PreparedCommand {
