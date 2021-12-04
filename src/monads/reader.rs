@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use do_notation::Lift;
+
 pub struct Reader<'reader, CTX, T> {
     f: Box<dyn 'reader + Fn(&CTX) -> T>,
     context_type: PhantomData<CTX>,
@@ -37,16 +39,20 @@ impl<'reader, CTX: 'reader, T: 'reader> Reader<'reader, CTX, T>
     }
 }
 
+impl<'reader, CTX: 'reader, A: 'reader + Clone> Lift<A> for Reader<'reader, CTX, A> {
+    fn lift(a: A) -> Self {
+        Reader::unit(a)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use do_notation::m;
+
     use super::Reader;
 
     struct Dao {
         age: u16,
-    }
-
-    fn user_by_age<'a>(age: u16) -> Reader<'a, Dao, u16> {
-        Reader::<'a, Dao, u16>::new(move |dao| dao.age + age)
     }
 
     #[test]
@@ -120,5 +126,22 @@ mod tests {
 
         // then
         assert_eq!(user_details_by!(dao.age, dao.age + value), result);
+    }
+
+    #[test]
+    fn enables_do_notation() {
+        // given
+        let read_msg = Reader::<i32, String>::unit("OK".to_string());
+
+        // when
+        let res = m! {
+            msg <- read_msg;
+            let do_msg = format!("do_{}", msg);
+            return do_msg;
+        };
+
+        // then
+        let some_context = 1;
+        assert_eq!("do_OK", res.apply(&some_context))
     }
 }
