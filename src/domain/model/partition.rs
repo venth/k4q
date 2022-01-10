@@ -1,7 +1,7 @@
 use crate::domain::model::{Count, PartitionId};
 use crate::domain::model::watermark::Watermark;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Partition {
     pub partition_id: PartitionId,
     pub low_watermark: Watermark,

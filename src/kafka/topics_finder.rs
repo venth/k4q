@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use do_notation::m;
 use futures::{stream, StreamExt};
 use futures::stream::BoxStream;
 use rdkafka::consumer::{Consumer, StreamConsumer};
@@ -7,8 +8,10 @@ use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
 use crate::domain::model::{K4fqError, Topic, TopicName};
+use crate::domain::model::K4fqError::KafkaError;
 use crate::domain::ports;
 use crate::monads::Reader;
+use crate::monads::ResultT;
 
 pub struct KafkaTopicsFinder {
     consumer: StreamConsumer,
@@ -28,25 +31,34 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
     }
 }
 
+type KafkaReader<'a, T> = Reader<'a, StreamConsumer, Result<T, K4fqError>>;
+type KafkaReaderT<'a, T> = ResultT<'a, StreamConsumer,T, K4fqError>;
+
 impl KafkaTopicsFinder {
     pub fn new(consumer: StreamConsumer) -> Self {
         Self { consumer, timeout: Duration::from_secs(2) }
     }
 
     fn topic_by(&self, topic_name: TopicName) -> Result<Topic, K4fqError> {
-        /* m! {
-             let client = self.consumer.client();
-             metadata <- self.fetch_metadata_for(&topic_name);
-             let topic = metadata.topics().iter().next();
-             chosen_topic <- topic.ok_or(K4fqError::KafkaError(format!("Cannot find topic: {:?}", topic_name)));
-             let partitions = self.fetch_partitions_for(&chosen_topic);
+/*        let topic_metadata = m! {
+            metadata <- ResultT::lift(self.fetch_metadata_for(&topic_name));
+            let topic = Self::first_of(metadata.topics());
 
-             Ok(Topic::new(topic_name, partitions))
-         }*/
-        Result::Err(K4fqError::KafkaError("Not ready".to_string()))
+            topic.ok_or(K4fqError::KafkaError(format!("Cannot find topic: {:?}", topic_name)))
+        };
+
+        let topic = m! {
+            metadata <- topic_metadata;
+            partitions <- ResultT::lift(self.fetch_partitions_for(metadata));
+            let a = Topic::new(topic_name, partitions);
+            return Ok(a);
+         };
+        topic.value().apply(&self.consumer);
+*/
+    Err(K4fqError::NotSupported)
     }
 
-    fn fetch_partitions_for(&self, topic: &MetadataTopic) -> Reader<StreamConsumer, Result<Vec<model::Partition>, K4fqError>> {
+    fn fetch_partitions_for(&self, topic: &MetadataTopic) -> KafkaReader<Vec<model::Partition>> {
         Reader::new(move |consumer: &StreamConsumer|
             (1..=5)
                 .map(|id| stub_partition(id - 1, 0, 10))
@@ -55,12 +67,15 @@ impl KafkaTopicsFinder {
     }
 
     fn fetch_metadata_for(&self, topic_name: &TopicName) -> Reader<StreamConsumer, Result<Metadata, K4fqError>> {
-        /*        Reader::new(move |consumer: &StreamConsumer| consumer
-                    .client()
-                    .fetch_metadata(Some(topic_name.as_str()), self.timeout)
-                    .map_err(|e| K4fqError::KafkaError(e.to_string())))
-        */
-        Reader::new(move |_| Result::Err(K4fqError::KafkaError("Not ready".to_string())))
+        let topic = topic_name.clone();
+        Reader::new(move |consumer: &StreamConsumer| consumer
+            .client()
+            .fetch_metadata(Some(topic.as_str()), self.timeout)
+            .map_err(|e| K4fqError::KafkaError(e.to_string())))
+    }
+
+    fn first_of<A>(arr: &[A]) -> Option<&A> {
+        arr.iter().next()
     }
 }
 

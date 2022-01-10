@@ -7,7 +7,7 @@ pub struct ResultT<'a, CTX, S, E> {
 }
 
 impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
-    pub fn unit(value: Reader<'a, CTX, Result<S, E>>) -> Self {
+    pub fn lift(value: Reader<'a, CTX, Result<S, E>>) -> Self {
         Self { value }
     }
 
@@ -20,7 +20,7 @@ impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
             V: 'a,
             F: 'a + Fn(S) -> V,
     {
-        ResultT::unit(self.value.map(move |r| r.map(|s| f(s))))
+        ResultT::lift(self.value.map(move |r| r.map(|s| f(s))))
     }
 
     pub fn map_err<V, F>(self, f: F) -> ResultT<'a, CTX, S, V>
@@ -28,15 +28,38 @@ impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
             V: 'a,
             F: 'a + Fn(E) -> V,
     {
-        ResultT::unit(self.value.map(move |r| r.map_err(|s| f(s))))
+        ResultT::lift(self.value.map(move |r| r.map_err(|s| f(s))))
     }
 
     pub fn and_then<V, F>(self, f: F) -> ResultT<'a, CTX, V, E>
         where
+            S: Clone,
+            E: Clone,
             V: 'a,
-            F: 'a + Fn(S) -> Result<V, E>,
+            F: 'a + Fn(S) -> ResultT<'a, CTX, V, E> + Copy,
     {
-        ResultT::<'a, CTX, V, E>::unit(self.value.map(move |r| r.and_then(|s| f(s))))
+        ResultT::lift(self.value
+            .and_then(move |v| {
+                Reader::new(move |ctx| {
+                    Self::duplicate(&v)
+                        .and_then(|s| f(s).value.apply(ctx))
+                })
+            }))
+    }
+
+    fn duplicate(v: &Result<S, E>) -> Result<S, E>
+        where S: Clone, E: Clone,
+    {
+        match &v {
+            Ok(s) => Ok(Clone::clone(s)),
+            Err(e) => Err(Clone::clone(e))
+        }
+    }
+}
+
+impl<'reader, CTX: 'reader, S: 'reader + Clone, E: 'reader + Clone> Lift<S> for ResultT<'reader, CTX, S, E> {
+    fn lift(a: S) -> Self {
+        ResultT::lift(Reader::unit(Result::Ok(a)))
     }
 }
 
@@ -53,7 +76,7 @@ mod test {
         let original = Reader::<String, Result<String, ()>>::unit(Result::Ok("OK".to_string()));
 
         // and
-        let transformed = ResultT::unit(original);
+        let transformed = ResultT::lift(original);
 
         // when
         let message = transformed.value().apply(&"some".to_string());
@@ -68,7 +91,7 @@ mod test {
         let original = Reader::<String, Result<String, ()>>::unit(Result::Ok("OK".to_string()));
 
         // and
-        let transformed = ResultT::unit(original);
+        let transformed = ResultT::lift(original);
 
         // and
         let mapped = transformed.map(move |s| format!("mapped {}", s));
@@ -86,10 +109,11 @@ mod test {
         let original = Reader::<String, Result<String, String>>::unit(Result::Ok("OK".to_string()));
 
         // and
-        let transformed = ResultT::unit(original);
+        let transformed = ResultT::lift(original);
 
         // and
-        let mapped: ResultT<String, String, String> = transformed.and_then(move |s| Result::Err(format!("error instead of {}", s)));
+        let mapped: ResultT<String, String, String> = transformed.and_then(move |s|
+            ResultT::lift(Reader::unit(Result::Err(format!("error instead of {}", s)))));
 
         // when
         let message = mapped.value().apply(&"some".to_string());
@@ -99,15 +123,34 @@ mod test {
     }
 
     #[test]
+    fn maps_success_to_different_type() {
+        // given
+        let original = Reader::<String, Result<String, String>>::unit(Result::Ok("OK".to_string()));
+
+        // and
+        let transformed = ResultT::lift(original);
+
+        // and
+        let mapped: ResultT<String, i32, String> = transformed.and_then(move |_|
+            ResultT::lift(Reader::unit(Result::Ok(1))));
+
+        // when
+        let value = mapped.value().apply(&"some".to_string());
+
+        // then
+        assert_eq!(1, value.unwrap());
+    }
+
+    #[test]
     fn maps_error_to_a_different_error_kind() {
         // given
         let original = Reader::<String, Result<String, ()>>::unit(Result::Err(()));
 
         // and
-        let transformed = ResultT::unit(original);
+        let transformed = ResultT::lift(original);
 
         // and
-        let mapped: ResultT<String, String, String> = transformed.map_err(move |e| "error".to_string());
+        let mapped: ResultT<String, String, String> = transformed.map_err(move |_| "error".to_string());
 
         // when
         let message = mapped.value().apply(&"some".to_string());
@@ -120,7 +163,7 @@ mod test {
     fn enables_do_notation() {
         // given
         let read_msg = Reader::<i32, Result<String, ()>>::unit(Result::Ok("OK".to_string()));
-        let result_msg = ResultT::unit(read_msg);
+        let result_msg = ResultT::lift(read_msg);
         // when
         let res = m! {
             msg <- result_msg;

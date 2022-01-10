@@ -1,41 +1,42 @@
 use std::marker::PhantomData;
+use std::sync::Arc;
 
 use do_notation::Lift;
 
 pub struct Reader<'reader, CTX, T> {
-    f: Box<dyn 'reader + Fn(&CTX) -> T>,
+    f: Arc<dyn 'reader + Fn(&CTX) -> T>,
     context_type: PhantomData<CTX>,
 }
 
 impl<'reader, CTX: 'reader, T: 'reader> Reader<'reader, CTX, T>
 {
     pub fn new<F: 'reader + Fn(&CTX) -> T>(f: F) -> Self {
-        Self { f: Box::new(f), context_type: PhantomData }
+        Self { f: Arc::new(f), context_type: PhantomData }
     }
 
     pub fn unit(t: T) -> Self
-        where
-            T: 'reader + Clone,
+        where T: Clone,
     {
         Self::new(move |_| t.clone())
     }
 
     pub fn and_then<V: 'reader, G: 'reader>(self, f: G) -> Reader<'reader, CTX, V>
         where
-            G: Fn(T) -> Reader<'reader, CTX, V>,
+            G: 'reader + Fn(T) -> Reader<'reader, CTX, V>,
     {
-        Reader::new(move |ctx: &CTX| f((self.f)(&ctx)).apply(&ctx))
+        Reader::<'reader, CTX, V>::new(move |ctx: &CTX| f((self.f.clone())(&ctx)).apply(&ctx))
     }
 
     pub fn map<V: 'reader, G: 'reader>(self, f: G) -> Reader<'reader, CTX, V>
         where
             G: Fn(T) -> V,
     {
-        Reader::<CTX, V>::new(move |ctx: &CTX| f((self.f)(&ctx)))
+        let func = self.f.clone();
+        Reader::<'reader, CTX, V>::new(move |ctx: &CTX| f(func(&ctx)))
     }
 
     pub fn apply(&self, ctx: &CTX) -> T {
-        (self.f)(ctx)
+        (self.f.clone())(ctx)
     }
 }
 

@@ -1,7 +1,7 @@
-use crate::domain::model::partition::Partition;
 use crate::domain::model::{Count, TopicName};
+use crate::domain::model::partition::Partition;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Topic {
     pub topic_name: TopicName,
     pub partitions: Vec<Partition>,

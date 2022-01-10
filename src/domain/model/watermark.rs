@@ -1,6 +1,6 @@
 use std::ops::Sub;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Watermark {
     value: i64,
 }
