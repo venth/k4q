@@ -20,14 +20,15 @@ impl<'reader, CTX: 'reader, T: 'reader> Reader<'reader, CTX, T>
         Self::new(move |_| t.clone())
     }
 
-    pub fn and_then<V: 'reader, G: 'reader>(self, f: G) -> Reader<'reader, CTX, V>
+    pub fn and_then<V: 'reader, G: 'reader>(&self, f: G) -> Reader<'reader, CTX, V>
         where
             G: 'reader + Fn(T) -> Reader<'reader, CTX, V>,
     {
-        Reader::<'reader, CTX, V>::new(move |ctx: &CTX| f((self.f.clone())(&ctx)).apply(&ctx))
+        let func = self.f.clone();
+        Reader::<'reader, CTX, V>::new(move |ctx: &CTX| f(func(&ctx)).apply(&ctx))
     }
 
-    pub fn map<V: 'reader, G: 'reader>(self, f: G) -> Reader<'reader, CTX, V>
+    pub fn map<V: 'reader, G: 'reader>(&self, f: G) -> Reader<'reader, CTX, V>
         where
             G: Fn(T) -> V,
     {

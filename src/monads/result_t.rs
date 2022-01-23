@@ -1,21 +1,23 @@
+use std::sync::Arc;
+
 use do_notation::Lift;
 
 use crate::monads::Reader;
 
 pub struct ResultT<'a, CTX, S, E> {
-    value: Reader<'a, CTX, Result<S, E>>,
+    value: Arc<Reader<'a, CTX, Result<S, E>>>,
 }
 
 impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
     pub fn lift(value: Reader<'a, CTX, Result<S, E>>) -> Self {
-        Self { value }
+        Self { value: Arc::new(value) }
     }
 
-    pub fn value(self) -> Reader<'a, CTX, Result<S, E>> {
-        self.value
+    pub fn value(&self) -> &Reader<'a, CTX, Result<S, E>> {
+        &(self.value)
     }
 
-    pub fn map<V, F>(self, f: F) -> ResultT<'a, CTX, V, E>
+    pub fn map<V, F>(&self, f: F) -> ResultT<'a, CTX, V, E>
         where
             V: 'a,
             F: 'a + Fn(S) -> V,
@@ -23,7 +25,7 @@ impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
         ResultT::lift(self.value.map(move |r| r.map(|s| f(s))))
     }
 
-    pub fn map_err<V, F>(self, f: F) -> ResultT<'a, CTX, S, V>
+    pub fn map_err<V, F>(&self, f: F) -> ResultT<'a, CTX, S, V>
         where
             V: 'a,
             F: 'a + Fn(E) -> V,
@@ -31,35 +33,45 @@ impl<'a, CTX: 'a, S: 'a, E: 'a> ResultT<'a, CTX, S, E> {
         ResultT::lift(self.value.map(move |r| r.map_err(|s| f(s))))
     }
 
-    pub fn and_then<V, F>(self, f: F) -> ResultT<'a, CTX, V, E>
+    pub fn and_then<V, F>(&self, f: F) -> ResultT<'a, CTX, V, E>
         where
-            S: Clone,
-            E: Clone,
             V: 'a,
-            F: 'a + Fn(S) -> ResultT<'a, CTX, V, E> + Copy,
+            F: 'a + Fn(S) -> ResultT<'a, CTX, V, E>,
     {
-        ResultT::lift(self.value
-            .and_then(move |v| {
-                Reader::new(move |ctx| {
-                    Self::duplicate(&v)
-                        .and_then(|s| f(s).value.apply(ctx))
-                })
-            }))
-    }
+        let func = Arc::new(f);
+        let reader = self.value.clone();
+        let mapped = Reader::new(move |ctx| {
+            reader.map(|r| {
+                let func1 = func.clone();
+                r.and_then(move |s| (func1.clone())(s).value.apply(ctx))
+            }).apply(ctx)
+        });
+        ResultT::lift(mapped)
 
-    fn duplicate(v: &Result<S, E>) -> Result<S, E>
-        where S: Clone, E: Clone,
-    {
-        match &v {
-            Ok(s) => Ok(Clone::clone(s)),
-            Err(e) => Err(Clone::clone(e))
-        }
+        /*        ResultT::lift(self.value
+                    .and_then(move |v| {
+                        Reader::new(move |ctx| {
+                            Self::duplicate(&v)
+                                .and_then(|s| f(s).value.apply(ctx))
+                        })
+                    }))
+        */
     }
 }
 
-impl<'reader, CTX: 'reader, S: 'reader + Clone, E: 'reader + Clone> Lift<S> for ResultT<'reader, CTX, S, E> {
-    fn lift(a: S) -> Self {
-        ResultT::lift(Reader::unit(Result::Ok(a)))
+fn duplicate<S, E>(v: &Result<S, E>) -> Result<S, E>
+    where S: Clone, E: Clone,
+{
+    match &v {
+        Ok(s) => Ok(Clone::clone(s)),
+        Err(e) => Err(Clone::clone(e))
+    }
+}
+
+
+impl<'reader, CTX: 'reader, S: 'reader + Clone, E: 'reader + Clone> Lift<Result<S, E>> for ResultT<'reader, CTX, S, E> {
+    fn lift(a: Result<S, E>) -> Self {
+        ResultT::lift(Reader::new(move |_| duplicate(&a)))
     }
 }
 
@@ -168,7 +180,7 @@ mod test {
         let res = m! {
             msg <- result_msg;
             let do_msg = format!("do_{}", msg);
-            return do_msg;
+            return Result::Ok(do_msg);
         };
 
         // then

@@ -35,6 +35,7 @@ impl PreparedCommand {
             .map_ok(|topic| query_range_estimator.estimate(&topic, &QueryRange::Whole))
             .map_ok(|query_range| self.initiate_query(query_range))
             .map_ok(|query| query.resulted_with(record_finder.find_by(query.topic_name())))
+            .inspect_err(|err| println!("Error: {err:?}!"))
             .try_for_each_concurrent(10, |n: QueryResult| async {
                 Ok(println!("{:?}", 1))
             });
