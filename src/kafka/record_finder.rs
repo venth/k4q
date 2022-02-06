@@ -1,7 +1,5 @@
-use std::pin::Pin;
+use std::iter;
 
-use futures::{Stream, StreamExt};
-use futures::stream;
 use rdkafka::consumer::StreamConsumer;
 
 use crate::domain::model::Offset;
@@ -13,9 +11,9 @@ use crate::domain::model::TopicName;
 use crate::domain::ports;
 
 impl ports::RecordFinder for KafkaRecordFinder {
-    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Pin<Box<dyn Stream<Item=Record>>> {
+    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>> {
         let topic_name = topic_name.clone();
-        stream::repeat(move ||
+        Box::new(iter::repeat(move ||
             Record::of(
                 topic_name,
                 RecordKey::from("key"),
@@ -24,8 +22,7 @@ impl ports::RecordFinder for KafkaRecordFinder {
                 Payload::from("{}"),
             ))
             .take(10)
-            .map(|f| f())
-            .boxed()
+            .map(|f| f()))
     }
 }
 

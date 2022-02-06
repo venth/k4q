@@ -53,10 +53,12 @@ impl AppImpl {
                 progress_notifier: self.progress_notifier.clone(),
                 cmd,
             })
-            .unwrap_or_else(|| PreparedCommand {
-                configured_context: configured_context.clone(),
-                progress_notifier: self.progress_notifier.clone(),
-                cmd: Command::CommandNotRecognized,
+            .unwrap_or_else(|| {
+                PreparedCommand {
+                    configured_context: configured_context.clone(),
+                    progress_notifier: self.progress_notifier.clone(),
+                    cmd: Command::CommandNotRecognized,
+                }
             })
     }
 }

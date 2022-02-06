@@ -1,8 +1,6 @@
 use std::time::Duration;
 
 use do_notation::m;
-use futures::{stream, StreamExt};
-use futures::stream::BoxStream;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
@@ -18,13 +16,13 @@ pub struct KafkaTopicsFinder {
 }
 
 impl ports::TopicsFinder for KafkaTopicsFinder {
-    fn find_by<'a>(&'a self, topics_matcher_type: &'a model::TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4fqError>> {
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a model::TopicsMatcherType)
+                   -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + 'a> {
         match topics_matcher_type {
             model::TopicsMatcherType::DIRECT(topics) => {
-                stream::iter(topics)
+                Box::new(topics.into_iter()
                     .map(model::TopicName::from)
-                    .map(move |topic_name| self.topic_by(topic_name))
-                    .boxed()
+                    .map(move |topic_name| self.topic_by(topic_name)))
             }
         }
     }

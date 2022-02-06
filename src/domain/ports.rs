@@ -1,9 +1,6 @@
 use std::path::{Path, PathBuf};
-use std::pin::Pin;
 use std::sync::Arc;
 
-use futures::Stream;
-use futures::stream::BoxStream;
 use shaku::Interface;
 
 use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4fqError, QueryRange, Topic, TopicsMatcherType};
@@ -12,7 +9,7 @@ use crate::domain::model::Record;
 use crate::domain::model::TopicName;
 
 pub trait RecordFinder: Interface {
-    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Pin<Box<dyn Stream<Item=Record>>>;
+    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>>;
 }
 
 pub trait CommandRecognizer: Interface {
@@ -25,7 +22,7 @@ pub trait ProgressNotifier: Interface {
 }
 
 pub trait TopicsFinder: Interface {
-    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> BoxStream<'a, Result<Topic, K4fqError>>;
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + 'a>;
 }
 
 pub trait QueryRangeEstimator: Interface {
