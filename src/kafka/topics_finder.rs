@@ -1,12 +1,15 @@
 use std::time::Duration;
 
 use do_notation::m;
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
 use crate::domain::model::{K4fqError, Topic, TopicName};
 use crate::domain::ports;
+use crate::iter::IntoSequentialIteratorEx;
 use crate::monads::Reader;
 use crate::monads::ResultT;
 
@@ -20,9 +23,11 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
                    -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + 'a> {
         match topics_matcher_type {
             model::TopicsMatcherType::DIRECT(topics) => {
-                Box::new(topics.into_iter()
-                    .map(model::TopicName::from)
-                    .map(move |topic_name| self.topic_by(topic_name)))
+                Box::new(
+                    topics.into_par_iter()
+                        .map(model::TopicName::from)
+                        .map(move |topic_name| self.topic_by(topic_name))
+                        .into_seq_iter())
             }
         }
     }

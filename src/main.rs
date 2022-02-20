@@ -4,6 +4,7 @@ mod kafka;
 mod console;
 mod properties;
 mod monads;
+mod iter;
 
 #[tokio::main]
 async fn main() {

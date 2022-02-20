@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use rayon::iter::ParallelIterator;
 use shaku::Interface;
 
 use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4fqError, QueryRange, Topic, TopicsMatcherType};

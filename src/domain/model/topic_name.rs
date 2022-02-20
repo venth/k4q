@@ -6,6 +6,9 @@ pub struct TopicName {
     value: String,
 }
 
+unsafe impl Send for TopicName{}
+unsafe impl Sync for TopicName{}
+
 impl TopicName {
     pub fn as_str(&self) -> &str {
         self.value.as_str()
