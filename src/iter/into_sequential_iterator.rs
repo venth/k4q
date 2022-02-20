@@ -1,5 +1,5 @@
 use core::option::Option;
-use std::{iter, thread};
+use std::iter;
 
 use crossbeam::channel;
 use crossbeam::channel::{Receiver, Sender};
@@ -28,12 +28,13 @@ fn deferred_first_element<'a, T: 'a + Send, PI: 'a + ParallelIterator<Item=T>>(
     receiver: Receiver<T>) -> Box<dyn 'a + Iterator<Item=T>>
 {
     let deferred = iter::once(Box::new(move || {
-
         crossbeam::scope(|s| {
             s.spawn(|_| {
                 par_iter.for_each(|element| {
                     sender.send(element).unwrap();
                 });
+
+                drop(sender);
             });
         }).unwrap();
 
@@ -41,7 +42,9 @@ fn deferred_first_element<'a, T: 'a + Send, PI: 'a + ParallelIterator<Item=T>>(
     }) as Box<dyn FnOnce() -> Option<T>>);
 
     Box::new(deferred
-        .map(|f| f())
+        .map(|f| {
+            f()
+        })
         .filter(Option::is_some)
         .map(Option::unwrap))
 }
@@ -51,4 +54,54 @@ fn deferred_remaining_elements<'a, T: 'a + Send>(receiver: Receiver<T>) -> Box<d
         iter::repeat_with(move || receiver.recv().ok())
             .filter(Option::is_some)
             .map(Option::unwrap))
+}
+
+#[cfg(test)]
+mod tests {
+    use itertools::Itertools;
+    use rayon::iter::{IntoParallelIterator, ParallelBridge};
+
+    use super::*;
+
+    #[test]
+    fn does_noting_for_an_empty_iterator() {
+        // when
+        let result = Vec::<i32>::new().into_par_iter().into_seq_iter().collect_vec();
+
+        // then
+        assert_eq!(Vec::<i32>::new(), result);
+    }
+
+    #[test]
+    fn iterates_over_whole_iterator_range() {
+        // given
+        let elements = 120;
+
+        // when
+        let result = iter::repeat(12)
+            .take(elements)
+            .par_bridge()
+            .into_seq_iter()
+            .count();
+
+        // then
+        assert_eq!(elements, result);
+    }
+
+    #[test]
+    fn iterates_over_given_array() {
+        // given
+        let some_vector = vec![1, 2, 3, 4];
+
+        // when
+        let result = some_vector
+            .clone()
+            .into_par_iter()
+            .into_seq_iter()
+            .collect_vec();
+
+        // then
+        assert_eq!(some_vector.len(), result.len());
+        assert!(some_vector.into_iter().all(|el| result.contains(&el)))
+    }
 }
