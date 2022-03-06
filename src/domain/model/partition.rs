@@ -8,6 +8,8 @@ pub struct Partition {
     pub high_watermark: Watermark,
 }
 
+unsafe impl Send for Partition {}
+
 impl Partition {
     pub fn new(partition_id: PartitionId, low_watermark: Watermark, high_watermark: Watermark)
                -> Self {

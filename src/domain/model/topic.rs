@@ -7,6 +7,8 @@ pub struct Topic {
     pub partitions: Vec<Partition>,
 }
 
+unsafe impl Send for Topic {}
+
 impl Topic {
     pub fn new(topic_name: TopicName, partitions: Vec<Partition>) -> Self {
         Topic {

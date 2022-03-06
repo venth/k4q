@@ -10,7 +10,7 @@ use crate::domain::model::Record;
 use crate::domain::model::TopicName;
 
 pub trait RecordFinder: Interface {
-    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>>;
+    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record> + Sync + Send>;
 }
 
 pub trait CommandRecognizer: Interface {
@@ -19,11 +19,11 @@ pub trait CommandRecognizer: Interface {
 
 pub trait ProgressNotifier: Interface {
     fn notify(&self, message: &str);
-    fn start(&self, estimated_max_size: &Count) -> Arc<dyn Progress>;
+    fn start(&self, estimated_max_size: &Count) -> Arc<dyn Progress + Sync + Send>;
 }
 
 pub trait TopicsFinder: Interface {
-    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + 'a>;
+    fn find_by<'a>(&'a self, topics_matcher_type: &'a TopicsMatcherType) -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + Send + 'a>;
 }
 
 pub trait QueryRangeEstimator: Interface {
@@ -34,7 +34,7 @@ pub trait KafkaSessionFactory: Interface {
     fn create(&self, properties: Box<dyn ApplicationProperties>) -> Result<Box<dyn KafkaSession>, K4fqError>;
 }
 
-pub trait KafkaSession {
+pub trait KafkaSession: Sync + Send {
     fn topics_finder(&self) -> Arc<dyn TopicsFinder>;
     fn query_range_estimator(&self) -> Arc<dyn QueryRangeEstimator>;
     fn record_finder(&self) -> Arc<dyn RecordFinder>;

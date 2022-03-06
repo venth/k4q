@@ -5,6 +5,8 @@ pub struct Watermark {
     value: i64,
 }
 
+unsafe impl Send for Watermark {}
+
 impl From<i64> for Watermark {
     fn from(value: i64) -> Self {
         Watermark { value }

@@ -20,14 +20,13 @@ pub struct KafkaTopicsFinder {
 
 impl ports::TopicsFinder for KafkaTopicsFinder {
     fn find_by<'a>(&'a self, topics_matcher_type: &'a model::TopicsMatcherType)
-                   -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + 'a> {
+                   -> Box<dyn Iterator<Item=Result<Topic, K4fqError>> + Send + 'a> {
         match topics_matcher_type {
             model::TopicsMatcherType::DIRECT(topics) => {
                 Box::new(
-                    topics.into_par_iter()
+                    topics.into_iter()
                         .map(model::TopicName::from)
-                        .map(move |topic_name| self.topic_by(topic_name))
-                        .into_seq_iter())
+                        .map(move |topic_name| self.topic_by(topic_name)))
             }
         }
     }

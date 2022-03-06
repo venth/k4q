@@ -1,7 +1,7 @@
 use crate::domain::model::Record;
 use crate::domain::model::record_key::RecordKey;
 
-pub trait Criteria {
+pub trait Criteria: Sync + Send {
     fn test(&self, rec: &Record) -> bool;
 }
 

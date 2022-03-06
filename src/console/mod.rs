@@ -21,8 +21,9 @@ pub fn module() -> Arc<dyn domain::ConsoleModule> {
         .with_component_parameters::<progress_notifier::ConsoleErrorNotifier>(progress_notifier::ConsoleErrorNotifierParameters {
             progress: MultiProgress::new(),
             progress_style: ProgressStyle::default_bar()
+                .progress_chars("##-")
                 .template("[{elapsed_precise}] {bar:100.cyan/blue} {pos:>11}/{len:11} {msg}")
-                .progress_chars("##-"),
+                .unwrap(),
         })
         .build())
 }

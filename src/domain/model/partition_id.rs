@@ -6,6 +6,8 @@ pub struct PartitionId {
     value: i32,
 }
 
+unsafe impl Send for PartitionId {}
+
 impl From<PartitionId> for String {
     fn from(t: PartitionId) -> Self {
         t.value.to_string()

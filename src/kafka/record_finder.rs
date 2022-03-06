@@ -11,7 +11,9 @@ use crate::domain::model::TopicName;
 use crate::domain::ports;
 
 impl ports::RecordFinder for KafkaRecordFinder {
-    fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record>> {
+    fn find_by<'a>(&self, topic_name: &'a TopicName)
+                   -> Box<dyn Iterator<Item=Record> + Sync + Send>
+    {
         let topic_name = topic_name.clone();
         Box::new(iter::repeat(move ||
             Record::of(

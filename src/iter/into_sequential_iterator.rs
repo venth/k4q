@@ -6,7 +6,7 @@ use crossbeam::channel::{Receiver, Sender};
 use rayon::iter::ParallelIterator;
 
 pub trait IntoSequentialIteratorEx<'a, T: Sized>: Sized {
-    fn into_seq_iter(self) -> Box<dyn 'a + Iterator<Item=T>>;
+    fn into_seq_iter(self) -> Box<dyn 'a + Iterator<Item=T> + Send>;
 }
 
 impl<'a, T, PI> IntoSequentialIteratorEx<'a, T> for PI
@@ -14,7 +14,7 @@ impl<'a, T, PI> IntoSequentialIteratorEx<'a, T> for PI
         T: 'a + Send,
         PI: 'a + ParallelIterator<Item=T>,
 {
-    fn into_seq_iter(self) -> Box<dyn 'a + Iterator<Item=T>> {
+    fn into_seq_iter(self) -> Box<dyn 'a + Iterator<Item=T> + Send> {
         let (sender, receiver) = channel::unbounded();
 
         Box::new(deferred_first_element(self, sender, receiver.clone())
@@ -25,7 +25,7 @@ impl<'a, T, PI> IntoSequentialIteratorEx<'a, T> for PI
 fn deferred_first_element<'a, T: 'a + Send, PI: 'a + ParallelIterator<Item=T>>(
     par_iter: PI,
     sender: Sender<T>,
-    receiver: Receiver<T>) -> Box<dyn 'a + Iterator<Item=T>>
+    receiver: Receiver<T>) -> Box<dyn 'a + Iterator<Item=T> + Send>
 {
     let deferred = iter::once(Box::new(move || {
         crossbeam::scope(|s| {
@@ -39,7 +39,7 @@ fn deferred_first_element<'a, T: 'a + Send, PI: 'a + ParallelIterator<Item=T>>(
         }).unwrap();
 
         receiver.recv().ok()
-    }) as Box<dyn FnOnce() -> Option<T>>);
+    }) as Box<dyn FnOnce() -> Option<T> + Send>);
 
     Box::new(deferred
         .map(|f| {
@@ -49,10 +49,14 @@ fn deferred_first_element<'a, T: 'a + Send, PI: 'a + ParallelIterator<Item=T>>(
         .map(Option::unwrap))
 }
 
-fn deferred_remaining_elements<'a, T: 'a + Send>(receiver: Receiver<T>) -> Box<dyn 'a + Iterator<Item=T>> {
+fn deferred_remaining_elements<'a, T: 'a + Send>(receiver: Receiver<T>)
+                                                 -> Box<dyn 'a + Iterator<Item=T> + Send>
+{
     Box::new(
-        iter::repeat_with(move || receiver.recv().ok())
-            .filter(Option::is_some)
+        iter::repeat_with(move || {
+            receiver.recv().ok()
+        })
+            .take_while(Option::is_some)
             .map(Option::unwrap))
 }
 

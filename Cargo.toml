@@ -2,14 +2,14 @@
 name = "k4fq"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.58.1"
+rust-version = "1.59.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 clap = "3.0"
 home = '0.5.3'
-indicatif = "0.17.0-rc.4"
+indicatif = "0.17.0-rc.6"
 predicates = "2.0.0"
 rdkafka = { version = "0.25", features = ["cmake-build"] }
 serde = "1.0"
@@ -31,3 +31,4 @@ log = "0.4"
 log4rs = "1"
 assert_cmd = "2.0"
 
+mockall = "0.11"

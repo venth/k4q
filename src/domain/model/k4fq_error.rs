@@ -10,6 +10,8 @@ pub enum K4fqError {
     NotSupported,
 }
 
+unsafe impl Send for K4fqError {}
+
 impl Display for K4fqError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
