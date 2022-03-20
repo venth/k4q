@@ -3,4 +3,5 @@ pub use self::parallel_iterator_ex::ParallelIteratorEx;
 
 mod into_sequential_iterator;
 mod parallel_iterator_ex;
-mod finish_aware_iterator;
+mod complete_aware_iterator;
+mod into_iterated_result;

@@ -39,7 +39,7 @@ mod tests {
 
     use mockall::automock;
 
-    use crate::iter::finish_aware_iterator::IntoCompleteAwareIteratorEx;
+    use crate::iter::complete_aware_iterator::IntoCompleteAwareIteratorEx;
 
     // cannot mock function, therefore trait Callback is introduced with
     // the static function
