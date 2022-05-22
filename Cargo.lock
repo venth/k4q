@@ -573,9 +573,9 @@ dependencies = [
 
 [[package]]
 name = "indicatif"
-version = "0.17.0-rc.6"
+version = "0.17.0-rc.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2946516aa80379c1e6ee9cfa75a7b2faf23f63690f44d682e7fecd0141bbcaf2"
+checksum = "088977cb4de4e09ea0232bd51c844490475ad94344fb0c60784f1fb380059b6d"
 dependencies = [
  "console",
  "number_prefix",
@@ -616,6 +616,7 @@ dependencies = [
  "crossbeam",
  "do-notation",
  "erased-serde",
+ "futures",
  "home",
  "indicatif",
  "itertools",
@@ -1093,9 +1094,9 @@ dependencies = [
 
 [[package]]
 name = "rdkafka"
-version = "0.25.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8acd8f5c5482fdf89e8878227bafa442d8c4409f6287391c85549ca83626c27"
+checksum = "1de127f294f2dba488ed46760b129d5ecbeabbd337ccbf3739cb29d50db2161c"
 dependencies = [
  "futures",
  "libc",
@@ -1110,9 +1111,9 @@ dependencies = [
 
 [[package]]
 name = "rdkafka-sys"
-version = "3.0.0+1.6.0"
+version = "4.2.0+1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca35e95c88e08cdc643b25744e38ccee7c93c7e90d1ac6850fe74cbaa40803c3"
+checksum = "9e542c6863b04ce0fa0c5719bc6b7b348cf8dd21af1bb03c9db5f9805b2a6473"
 dependencies = [
  "cmake",
  "libc",
@@ -1397,8 +1398,9 @@ checksum = "507e9898683b6c43a9aa55b64259b721b52ba226e0f3779137e50ad114a4c90b"
 
 [[package]]
 name = "testcontainers"
-version = "0.12.0"
-source = "git+https://github.com/testcontainers/testcontainers-rs.git#a13426d19f02ea019debb75b7a7d3b84c547e95c"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a84ae0aabaffcef7d052a366788ecdc6cc8190b49e629ed34a9c66637cadd70"
 dependencies = [
  "bollard-stubs",
  "futures",

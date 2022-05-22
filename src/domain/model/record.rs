@@ -14,9 +14,16 @@ pub struct Record {
     payload: Payload,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[serde(into="String")]
 pub struct Payload {
     value: String,
+}
+
+impl From<Payload> for String {
+    fn from(payload: Payload) -> Self {
+        payload.value
+    }
 }
 
 impl From<&str> for Payload {
