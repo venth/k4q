@@ -7,9 +7,10 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
-use crate::domain::model::{K4fqError, Topic, TopicName};
+use crate::domain::model::{K4fqError, PartitionId, Topic, TopicName};
 use crate::domain::ports;
 use crate::iter::IntoSequentialIteratorEx;
+use crate::kafka::kafka_reader::KafkaReader;
 use crate::monads::Reader;
 use crate::monads::ResultT;
 
@@ -31,8 +32,6 @@ impl ports::TopicsFinder for KafkaTopicsFinder {
         }
     }
 }
-
-type KafkaReader<'a, T> = Reader<'a, StreamConsumer, Result<T, K4fqError>>;
 
 impl KafkaTopicsFinder {
     pub fn new(consumer: StreamConsumer) -> Self {
@@ -56,19 +55,33 @@ impl KafkaTopicsFinder {
         topic.value().apply(&self.consumer)
     }
 
-    fn fetch_partitions_for(&self, _: Result<&MetadataTopic, K4fqError>) -> KafkaReader<Vec<model::Partition>> {
+    fn fetch_partitions_for(&self, metadata: Result<&MetadataTopic, K4fqError>) -> KafkaReader<Vec<model::Partition>> {
         Reader::new(move |consumer: &StreamConsumer|
             (1..=5)
                 .map(|id| stub_partition(id - 1, 0, 10))
                 .map(Result::Ok)
                 .collect::<Result<Vec<model::Partition>, K4fqError>>())
-    }
+
+/*        metadata
+            .map(|m| m.partitions())
+            .map(|partitions| partitions.into_iter())
+            .map(|partitions| partitions.map(|p| model::PartitionId::from(p.id())))
+            .map(|p|)
+*/    }
 
     fn fetch_metadata_for(&self, topic_name: TopicName) -> KafkaReader<Metadata> {
         Reader::new(move |consumer: &StreamConsumer| consumer
-            .client()
             .fetch_metadata(Some(topic_name.as_str()), self.timeout)
             .map_err(|e| K4fqError::KafkaError(e.to_string())))
+    }
+
+    fn fetch_partition_for(&self, topic_name: TopicName,
+                            partition_id: PartitionId) -> KafkaReader<model::Partition> {
+        Reader::new(move |consumer: &StreamConsumer| consumer
+            .fetch_watermarks(topic_name.as_str(), partition_id.value(), self.timeout)
+            .map_err(|e| K4fqError::KafkaError(e.to_string())))
+            .map(|r| r.map(|(low, high)| (model::Watermark::from(low), model::Watermark::from(high))))
+            .map(move |r| r.map(|(low, high)| model::Partition::new(partition_id, low, high)))
     }
 
     fn first_of<A>(arr: &[A]) -> Option<&A> {
@@ -81,10 +94,4 @@ fn stub_partition(id: i32, low: i64, high: i64) -> model::Partition {
         model::PartitionId::from(id),
         model::Watermark::from(low),
         model::Watermark::from(high))
-}
-
-fn stub_partitions(number_of_partitions: i32) -> Vec<model::Partition> {
-    (1..number_of_partitions)
-        .map(|id| stub_partition(id - 1, 0, 10))
-        .collect::<Vec<model::Partition>>()
 }

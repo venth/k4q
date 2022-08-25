@@ -10,6 +10,12 @@ mod query_range_estimator;
 mod stream_consumer_factory;
 mod properties;
 mod kafka_session;
+mod partition_reader;
+mod kafka_reader;
+mod timeout_aware_stream_consumer;
+mod metadata_reader;
+mod partitions_reader;
+mod topic_reader;
 
 module! {
     pub KafkaModule: domain::KafkaModule {

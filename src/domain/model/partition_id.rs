@@ -1,6 +1,6 @@
 use serde;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Copy, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(into="String")]
 pub struct PartitionId {
     value: i32,
@@ -26,3 +26,8 @@ impl Clone for PartitionId {
     }
 }
 
+impl PartitionId {
+    pub fn value(&self) -> i32 {
+        self.value
+    }
+}
