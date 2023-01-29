@@ -15,7 +15,6 @@ mod kafka_reader;
 mod timeout_aware_stream_consumer;
 mod metadata_reader;
 mod partitions_reader;
-mod topic_reader;
 
 module! {
     pub KafkaModule: domain::KafkaModule {

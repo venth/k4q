@@ -11,7 +11,7 @@ pub fn while_runs_do<'a, F>(f: F) where
     let cli = clients::Cli::default();
     // it seems that #run function is wrongly implemented - it passes to its result `docker` reference
     // which prevents to store the result in a struct :(
-    let server = cli.run(images::kafka::Kafka::default());
+    let server = cli.run(Kafka::default());
 
     server.start();
     let producer = Arc::new(create_producer(&server));
@@ -27,7 +27,7 @@ pub fn while_runs_do<'a, F>(f: F) where
 
 fn create_producer(kafka_node: &Container<Kafka>) -> FutureProducer {
     let bootstrap_servers = format!("localhost:{}",
-                                    kafka_node.get_host_port(images::kafka::KAFKA_PORT));
+                                    kafka_node.get_host_port_ipv4(images::kafka::KAFKA_PORT));
     ClientConfig::new()
         .set("bootstrap.servers", &bootstrap_servers)
         .set("message.timeout.ms", "5000")

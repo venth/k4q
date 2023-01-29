@@ -13,7 +13,7 @@ impl CommandSelector for Matcher {
     fn select_by<'a>(&self, matched: ArgMatches) -> Option<Command> {
         let query_topics: Option<Vec<String>> = matched
             .subcommand_matches("query")
-            .and_then(|m| m.values_of("topics"))
+            .and_then(|m| m.get_many::<String>("topics"))
             .map(|topics| Vec::from_iter(topics))
             .map(Vec::into_iter)
             .map(|topics| topics.map(ToString::to_string))
@@ -22,16 +22,16 @@ impl CommandSelector for Matcher {
         let query_key_criteria = matched
             .subcommand_matches("query")
             .and_then(|m| m.subcommand_matches("key"))
-            .and_then(|m| m.value_of("criteria"));
+            .and_then(|m| m.get_one::<String>("criteria"));
 
         let query_key_value = matched
             .subcommand_matches("query")
             .and_then(|m| m.subcommand_matches("key"))
-            .and_then(|m| m.value_of("keyValue"));
+            .and_then(|m| m.get_many::<String>("keyValue"));
 
         query_key_criteria
             .zip(query_key_value)
-            .map(|(op, v)| model::key_equals_value(RecordKey::from(v)))
+            .map(|(op, v)| model::key_equals_value(RecordKey::from("just a test")))
             .zip(query_topics)
             .map(|(crit, topics)| Command::QueryByKey(
                 TopicsMatcherType::DIRECT(topics),

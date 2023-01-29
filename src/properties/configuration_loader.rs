@@ -48,7 +48,7 @@ impl ApplicationProperties for PartialConfig {
         self.config
             .get_table(prefix)
             .map(PartialConfigSource::new)
-            .and_then(|c| Config::new().with_merged(c))
+            .and_then(|c| Config::default().with_merged(c))
             .map(PartialConfig::new)
             .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
             .map_err(ConfigurationLoader::description_of)
