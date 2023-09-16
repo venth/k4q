@@ -35,7 +35,6 @@ impl<'a, T: Send> Iterator for IntoCompleteAwareIterator<'a, T> {
 #[cfg(test)]
 mod tests {
     use std::iter;
-    use std::sync::Arc;
 
     use mockall::automock;
 

@@ -1,13 +1,10 @@
 use clap::{Arg, Command};
-use clap::builder::{EnumValueParser, PossibleValuesParser};
-use shaku::{Component, Interface};
+use clap::builder::PossibleValuesParser;
 
-pub trait CliParserFactory: Interface {
+pub trait CliParserFactory {
     fn create(&self) -> Command;
 }
 
-#[derive(Component)]
-#[shaku(interface = CliParserFactory)]
 pub struct ClapCliParserFactory {}
 
 impl CliParserFactory for ClapCliParserFactory {

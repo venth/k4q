@@ -1,27 +1,8 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use config::{Config, ConfigError, Source, Value};
-use erased_serde::Deserializer;
 
-use crate::domain::model::{ApplicationProperties, K4fqError};
-use crate::domain::ports;
-
-#[derive(shaku::Component)]
-#[shaku(interface = ports::PropertiesLoader)]
 pub struct ConfigurationLoader {}
-
-impl ports::PropertiesLoader for ConfigurationLoader {
-    fn load(&self, config_location: &Path) -> Result<Box<dyn ApplicationProperties>, K4fqError> {
-        Config::default()
-            .with_merged(config::File::with_name(config_location.to_str().unwrap()))
-            .map(PartialConfig::new)
-            .map(Box::new)
-            .map(|c| c as Box<dyn ApplicationProperties>)
-            .map_err(ConfigurationLoader::description_of)
-            .map_err(K4fqError::ConfigError)
-    }
-}
 
 
 struct PartialConfig {
@@ -38,26 +19,6 @@ impl PartialConfig {
         move |description| format!(
             "Issue with property path: '{}' in the configuration file. The error: {}",
             context, description)
-    }
-}
-
-impl ApplicationProperties for PartialConfig {
-    fn properties_by(&self, prefix: &str) -> Result<Box<dyn ApplicationProperties>, K4fqError> {
-        let contextual_error = PartialConfig::error_description_in_context(prefix);
-
-        self.config
-            .get_table(prefix)
-            .map(PartialConfigSource::new)
-            .and_then(|c| Config::default().with_merged(c))
-            .map(PartialConfig::new)
-            .map(|c| Box::new(c) as Box<dyn ApplicationProperties>)
-            .map_err(ConfigurationLoader::description_of)
-            .map_err(contextual_error)
-            .map_err(K4fqError::ConfigError)
-    }
-
-    fn deserializer<'de>(&self) -> Box<dyn erased_serde::Deserializer<'de>> {
-        Box::new(<dyn Deserializer>::erase(self.config.clone()))
     }
 }
 
