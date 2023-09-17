@@ -31,6 +31,7 @@ impl ports::CommandRecognizer for Adapter {
 #[cfg(test)]
 mod tests {
     use mockall::mock;
+
     use domainModel::RecognizedCommand;
 
     use crate::cli::Adapter;
@@ -42,15 +43,6 @@ mod tests {
         CliCommandRecognizer {}
         impl ports::CommandRecognizer for CliCommandRecognizer {
             fn recognize(&self, args: & Vec<String>) -> domainModel::RecognizedCommand;
-        }
-    }
-
-    impl<'a> Clone for RecognizedCommand {
-        fn clone(&self) -> Self {
-            match self {
-                RecognizedCommand::UnrecognizedCommand(args) =>
-                    RecognizedCommand::UnrecognizedCommand(args.clone())
-            }
         }
     }
 
