@@ -2,7 +2,6 @@ mod domain;
 mod cli;
 mod console;
 mod properties;
-mod iter;
 
 #[tokio::main]
 async fn main() {

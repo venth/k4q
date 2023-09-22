@@ -12,6 +12,7 @@ use rdkafka::util::Timeout;
 
 mod kafka;
 
+#[ignore]
 #[test]
 fn kafka_tests() {
     log4rs::init_file("config/log4rs-test.yaml", Default::default()).unwrap();

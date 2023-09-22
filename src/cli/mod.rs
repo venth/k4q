@@ -1,8 +1,10 @@
 use crate::domain::{model as domainModel, ports};
 
-mod cli_parser;
 mod cli_command_recognizer;
 mod properties_location_provider;
+mod command;
+mod cli_command;
+mod composed_cli_command;
 
 struct Adapter {
     command_recognizer: Box<dyn ports::CommandRecognizer>,
@@ -50,7 +52,7 @@ mod tests {
     fn delegates_recognition() {
         // given
         let some_args = args(&["some_arg1", "some_arg2"]);
-        let recognized_command = RecognizedCommand::UnrecognizedCommand(some_args.clone());
+        let recognized_command = RecognizedCommand::Unrecognized("unrecognized".to_string());
 
         #[warn(unused_mut)]
         let mut recognizer = MockCliCommandRecognizer::new();
