@@ -1,12 +1,14 @@
+use itertools::Itertools;
+
 mod domain;
 mod cli;
 mod console;
 mod properties;
+mod async_tools;
 
 #[tokio::main]
 async fn main() {
-    let _cmd_args: Vec<String> = std::env::args().collect();
-    let cli_adapter = cli::new();
-    let run_app = domain::services::new_app_runner(&cli_adapter);
-    run_app();
+    let cli = cli::new();
+    let console = console::new();
+    domain::services::run_app(std::env::args().collect_vec(), cli.clone(), console.clone()).await;
 }

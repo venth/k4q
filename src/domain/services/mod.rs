@@ -1,3 +1,4 @@
+pub(crate) use self::app::run_app;
+
 mod app;
 
-pub(crate) use self::app::new_app_runner;

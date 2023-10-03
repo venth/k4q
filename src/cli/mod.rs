@@ -1,7 +1,8 @@
+use std::sync::Arc;
+
 use crate::domain::{model as domainModel, ports};
 
 mod cli_command_recognizer;
-mod properties_location_provider;
 mod command;
 mod cli_command;
 mod composed_cli_command;
@@ -10,8 +11,8 @@ struct Adapter {
     command_recognizer: Box<dyn ports::CommandRecognizer>,
 }
 
-pub(crate) fn new() -> impl ports::CommandRecognizer {
-    return Adapter::new(cli_command_recognizer::new());
+pub(crate) fn new() -> Arc<dyn ports::CommandRecognizer> {
+    return Arc::new(Adapter::new(cli_command_recognizer::new()));
 }
 
 impl Adapter {

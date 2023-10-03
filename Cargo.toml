@@ -7,7 +7,7 @@ rust-version = "1.72.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = {version = "4.1.5", features = ["string"] }
+clap = { version = "4.1.5", features = ["string"] }
 home = '0.5.4'
 indicatif = "0.17.3"
 predicates = "3.0.3"
@@ -20,6 +20,9 @@ rayon = '1.6'
 tokio = { version = "1", features = ["full"] }
 do-notation = "0.1"
 itertools = "0.11.0"
+uuid = { version = "1.4.1", features = ["v4", "fast-rng", "macro-diagnostics"] }
+futures = { version = "0.3", default-features = false, features = ["compat"] }
+async-trait = "0.1.73"
 
 [dev-dependencies]
 # latest version - 0.12.0 doesn't contain kafka, so I used latest dev instead
@@ -31,5 +34,3 @@ log4rs = "1"
 assert_cmd = "2.0"
 
 mockall = "0.11"
-
-futures = '0.3'
