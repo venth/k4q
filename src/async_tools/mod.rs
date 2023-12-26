@@ -1,3 +1,5 @@
+pub(crate) mod option;
+
 /// Use for compile time checking, whether a function and its argument are
 /// prepared for async.
 /// Example:

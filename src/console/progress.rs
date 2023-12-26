@@ -6,7 +6,7 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use crate::domain::model::ProgressRange;
 use crate::domain::ports::{ProgressNotifier, ProgressStarter};
 
-pub(in crate::console) fn new<'a>() -> Box<dyn ProgressStarter<'a> + 'a> {
+pub(in crate::console) fn new() -> Arc<dyn ProgressStarter> {
     IndicatifProgressStarter::new(MultiProgress::new())
 }
 
@@ -22,18 +22,18 @@ impl Observer for IndicatifProgressStarter {
 }
 
 impl IndicatifProgressStarter {
-    fn new<'a>(bar: MultiProgress) -> Box<dyn ProgressStarter<'a> + 'a> {
-        Box::new(IndicatifProgressStarter { bar })
+    fn new(bar: MultiProgress) -> Arc<dyn ProgressStarter> {
+        Arc::new(IndicatifProgressStarter { bar })
     }
 }
 
 
 #[async_trait]
-impl<'a> ProgressStarter<'a> for IndicatifProgressStarter {
-    async fn start(&'a self, start_message: String, range: ProgressRange) -> Box<dyn ProgressNotifier + 'a> {
-        let progress = self.bar.add(new_progress_bar(start_message.as_ref(), range));
-        let self_observer: Arc<&'a dyn Observer> = Arc::new(self);
+impl ProgressStarter for IndicatifProgressStarter {
+    async fn start(self: Arc<Self>, start_message: String, range: ProgressRange) -> Arc<dyn ProgressNotifier> {
+        let self_observer = Arc::clone(&self);
         let observer = Arc::downgrade(&self_observer);
+        let progress = self_observer.bar.add(new_progress_bar(start_message.as_ref(), range));
         CurrentProgress::new(observer, progress)
     }
 }
@@ -53,20 +53,20 @@ trait Observer: Sync {
     fn notify(&self, bar: &ProgressBar);
 }
 
-struct CurrentProgress<'a> {
-    observer: Weak<&'a dyn Observer>,
+struct CurrentProgress {
+    observer: Weak<IndicatifProgressStarter>,
     bar: ProgressBar,
 }
 
-impl<'a> Drop for CurrentProgress<'a> {
+impl Drop for CurrentProgress {
     fn drop(&mut self) {
         self.observer.upgrade().map(|o| o.notify(&(self.bar)));
     }
 }
 
-impl<'a> CurrentProgress<'a> {
-    fn new(observer: Weak<&'a dyn Observer>, bar: ProgressBar) -> Box<dyn ProgressNotifier + 'a> {
-        Box::new(
+impl CurrentProgress {
+    fn new(observer: Weak<IndicatifProgressStarter>, bar: ProgressBar) -> Arc<dyn ProgressNotifier> {
+        Arc::new(
             CurrentProgress {
                 observer,
                 bar,
@@ -76,7 +76,7 @@ impl<'a> CurrentProgress<'a> {
 }
 
 #[async_trait]
-impl<'a> ProgressNotifier for CurrentProgress<'a> {
+impl ProgressNotifier for CurrentProgress {
     async fn step(&self) {
         self.bar.inc(1);
     }

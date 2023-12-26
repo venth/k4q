@@ -1,10 +1,11 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::domain::model::ProgressRange;
 
 #[async_trait]
-pub(crate) trait ProgressStarter<'a>: Send + Sync {
-    async fn start(&'a self, start_message: String, range: ProgressRange) -> Box<dyn ProgressNotifier + 'a>;
+pub(crate) trait ProgressStarter: Send + Sync {
+    async fn start(self: Arc<Self>, start_message: String, range: ProgressRange) -> Arc<dyn ProgressNotifier>;
 }
 
 #[async_trait]

@@ -1,7 +1,11 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use futures::lock::Mutex;
+use tokio::task::JoinHandle;
 
+use crate::console::channel_progress::{ChanneledListener, ChanneledStarter};
+use crate::di::Startable;
 use crate::domain::model::ProgressRange;
 use crate::domain::ports::ProgressNotifier;
 use crate::domain::ports::ProgressStarter;
@@ -9,23 +13,41 @@ use crate::domain::ports::ProgressStarter;
 mod progress;
 mod channel_progress;
 
-struct Adapter<'a> {
-    progress_starter: Box<dyn ProgressStarter<'a>>,
+pub(crate) struct Adapter {
+    progress_starter: Arc<ChanneledStarter>,
+    channeled_listener: Arc<Mutex<ChanneledListener>>,
 }
 
-pub(crate) fn new<'a>() -> Arc<dyn ProgressStarter<'a> + 'a> {
-    Adapter::new(progress::new())
+pub(crate) fn new() -> Arc<Adapter> {
+    let (starter, listener) = channel_progress::new(progress::new());
+    Arc::new(Adapter::new(starter, listener))
 }
 
-impl<'a> Adapter<'a> {
-    fn new(progress_starter: Box<dyn ProgressStarter>) -> Arc<dyn ProgressStarter> {
-        Arc::new(Adapter { progress_starter })
+impl Adapter {
+    fn new(progress_starter: Arc<ChanneledStarter>,
+           channeled_listener: Arc<Mutex<ChanneledListener>>) -> Self {
+        Adapter {
+            progress_starter: Arc::clone(&progress_starter),
+            channeled_listener,
+        }
+    }
+
+    pub(in crate::console) async fn finish(self: Arc<Self>) {
+        self.progress_starter.clone().finish().await;
+    }
+}
+
+impl Startable for Adapter {
+    fn start(self: Arc<Self>) -> JoinHandle<()> {
+        let channeled_listener = Arc::clone(&self.channeled_listener);
+        ChanneledListener::start(channeled_listener)
     }
 }
 
 #[async_trait]
-impl<'a> ProgressStarter<'a> for Adapter<'a> {
-    async fn start(&'a self, start_message: String, range: ProgressRange) -> Box<dyn ProgressNotifier + 'a> {
-        self.progress_starter.start(start_message, range).await
+impl ProgressStarter for Adapter {
+    async fn start(self: Arc<Self>, start_message: String, range: ProgressRange) -> Arc<dyn ProgressNotifier> {
+        let starter = Arc::clone(&self.progress_starter);
+        starter.start(start_message, range).await
     }
 }
