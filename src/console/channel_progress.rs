@@ -178,8 +178,11 @@ enum ConsoleCommands {
 
 #[cfg(test)]
 mod test {
+    use std::time::Duration;
     use futures::executor::block_on;
+    use tokio;
     use tokio::sync::mpsc;
+    use tokio::time::timeout;
     use uuid::Uuid;
 
     use crate::console::channel_progress::ChanneledStarter;
@@ -187,13 +190,13 @@ mod test {
     use crate::domain::model::ProgressRange;
     use crate::domain::ports::ProgressStarter;
 
-    #[test]
-    fn sends_start_command_on_start_request() {
+    #[tokio::test]
+    async fn sends_start_command_on_start_request() {
         // given
         let progress_id = Uuid::new_v4();
 
         // and
-        let (sender, mut receiver) = mpsc::channel(1);
+        let (sender, mut receiver) = mpsc::channel(2);
         let mocked_id = progress_id.clone();
         let progress_starter = ChanneledStarter::new(Box::new(move || mocked_id), sender);
 
@@ -205,8 +208,8 @@ mod test {
         // and
         let received = receiver.recv();
 
-        _ = block_on(progress);
-        let received_result = block_on(received);
+        _ = progress.await;
+        let received_result = received.await;
 
         // then
         assert_eq!(received_result.is_some(), true);
