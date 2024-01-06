@@ -178,11 +178,8 @@ enum ConsoleCommands {
 
 #[cfg(test)]
 mod test {
-    use std::time::Duration;
-    use futures::executor::block_on;
     use tokio;
     use tokio::sync::mpsc;
-    use tokio::time::timeout;
     use uuid::Uuid;
 
     use crate::console::channel_progress::ChanneledStarter;
