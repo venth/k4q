@@ -1,11 +1,12 @@
-use rdkafka::metadata::Metadata;
 use crate::domain::model;
+use crate::domain::model::K4fqError;
 use crate::kafka::kafka_reader::TimeoutAwareKafkaReader;
-use crate::kafka::timeout_aware_stream_consumer::TimeoutAwareStreamConsumer;
 use crate::monads::Reader;
+use rdkafka::metadata::Metadata;
 
-pub fn new(topic_name: model::TopicName) -> TimeoutAwareKafkaReader<Metadata> {
-    Reader::new(move |consumer: &TimeoutAwareStreamConsumer| consumer
+pub fn new<'a>(topic_name: model::TopicName) -> TimeoutAwareKafkaReader<'a, Metadata> {
+    /*Reader::new(move |consumer: &TimeoutAwareStreamConsumer| consumer
         .fetch_metadata(Some(topic_name.as_str()))
-        .map_err(|e| model::K4fqError::KafkaError(e.to_string())))
+        .map_err(|e| model::K4fqError::KafkaError(e.to_string())))*/
+    Reader::new(move |c| Result::Err(K4fqError::NotSupported))
 }
