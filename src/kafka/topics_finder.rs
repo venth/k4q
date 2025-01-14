@@ -1,15 +1,12 @@
 use std::time::Duration;
 
 use do_notation::m;
-use rayon::iter::IntoParallelIterator;
-use rayon::iter::ParallelIterator;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
 use crate::domain::model;
-use crate::domain::model::{K4fqError, PartitionId, Topic, TopicName};
+use crate::domain::model::{K4fqError, Topic, TopicName};
 use crate::domain::ports;
-use crate::iter::IntoSequentialIteratorEx;
 use crate::kafka::kafka_reader::KafkaReader;
 use crate::monads::Reader;
 use crate::monads::ResultT;
@@ -55,8 +52,8 @@ impl KafkaTopicsFinder {
         topic.value().apply(&self.consumer)
     }
 
-    fn fetch_partitions_for(&self, metadata: Result<&MetadataTopic, K4fqError>) -> KafkaReader<Vec<model::Partition>> {
-        Reader::new(move |consumer: &StreamConsumer|
+    fn fetch_partitions_for(&self, _: Result<&MetadataTopic, K4fqError>) -> KafkaReader<Vec<model::Partition>> {
+        Reader::new(move |_: &StreamConsumer|
             (1..=5)
                 .map(|id| stub_partition(id - 1, 0, 10))
                 .map(Result::Ok)
@@ -75,7 +72,7 @@ impl KafkaTopicsFinder {
             .map_err(|e| K4fqError::KafkaError(e.to_string())))
     }
 
-    fn fetch_partition_for(&self, topic_name: TopicName,
+/*    fn fetch_partition_for(&self, topic_name: TopicName,
                             partition_id: PartitionId) -> KafkaReader<model::Partition> {
         Reader::new(move |consumer: &StreamConsumer| consumer
             .fetch_watermarks(topic_name.as_str(), partition_id.value(), self.timeout)
@@ -83,7 +80,7 @@ impl KafkaTopicsFinder {
             .map(|r| r.map(|(low, high)| (model::Watermark::from(low), model::Watermark::from(high))))
             .map(move |r| r.map(|(low, high)| model::Partition::new(partition_id, low, high)))
     }
-
+*/
     fn first_of<A>(arr: &[A]) -> Option<&A> {
         arr.iter().next()
     }

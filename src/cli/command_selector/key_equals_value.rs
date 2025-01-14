@@ -31,7 +31,7 @@ impl CommandSelector for Matcher {
 
         query_key_criteria
             .zip(query_key_value)
-            .map(|(op, v)| model::key_equals_value(RecordKey::from(v)))
+            .map(|(_, v)| model::key_equals_value(RecordKey::from(v)))
             .zip(query_topics)
             .map(|(crit, topics)| Command::QueryByKey(
                 TopicsMatcherType::DIRECT(topics),

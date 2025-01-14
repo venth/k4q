@@ -16,7 +16,7 @@ impl Criteria for Box<dyn Criteria> {
 }
 
 impl Criteria for CriteriaKeyEqualsValue {
-    fn test(&self, rec: &Record) -> bool {
+    fn test(&self, _: &Record) -> bool {
         false
     }
 }

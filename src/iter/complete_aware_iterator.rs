@@ -35,7 +35,6 @@ impl<'a, T: Send> Iterator for IntoCompleteAwareIterator<'a, T> {
 #[cfg(test)]
 mod tests {
     use std::iter;
-    use std::sync::Arc;
 
     use mockall::automock;
 
@@ -86,7 +85,7 @@ mod tests {
         // given
         let sequence_size = 10;
         // and
-        let mut mocked_callback = MockCallback::new();
+        let mocked_callback = MockCallback::new();
         // and
         let mut iterator = iter::repeat(1).take(sequence_size)
             .into_complete_aware_iter(|| mocked_callback.on_completed());

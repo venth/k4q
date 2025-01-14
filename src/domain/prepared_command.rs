@@ -1,14 +1,11 @@
 use std::iter;
 use std::sync::Arc;
 
-use itertools::Itertools;
 use rayon::iter::ParallelIterator;
 use rayon::prelude::ParallelBridge;
 
-use crate::domain::model::{Command, Criteria, EstimatedQueryRange, K4fqError, Progress, QueryRange, Record, Topic, TopicName, TopicsMatcherType};
+use crate::domain::model::{Command, Criteria, EstimatedQueryRange, K4fqError, Progress, QueryRange, Record, TopicName, TopicsMatcherType};
 use crate::domain::ports;
-use crate::iter::IntoSequentialIteratorEx;
-use crate::iter::ParallelIteratorEx;
 
 pub struct PreparedCommand {
     pub configured_context: Arc<dyn ports::KafkaSession>,
@@ -31,7 +28,7 @@ impl PreparedCommand {
     }
 
 
-    fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, criteria: &Box<dyn Criteria>) {
+    fn execute_query_by_key(&self, topics_matcher: &TopicsMatcherType, _: &Box<dyn Criteria>) {
         let topics_finder = self.configured_context.topics_finder();
         let query_range_estimator = self.configured_context.query_range_estimator();
         let record_finder = self.configured_context.record_finder();

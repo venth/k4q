@@ -6,7 +6,7 @@ use shaku;
 use crate::domain::{model, ports};
 
 impl ports::ProgressNotifier for ConsoleErrorNotifier {
-    fn notify(&self, message: &str) {}
+    fn notify(&self, _: &str) {}
 
     fn start(&self, estimated_max_size: &model::Count) -> Arc<dyn model::Progress + Sync + Send> {
         let pb = self.progress.add(ProgressBar::new(estimated_max_size.value));

@@ -2,9 +2,9 @@ use crate::domain::model::K4fqError;
 use crate::kafka::kafka_reader::{SpecificTopicReader, TimeoutAwareKafkaReader};
 use rdkafka::metadata::{Metadata, MetadataTopic};
 
-pub fn new<'a>(
-    metadata_reader: SpecificTopicReader<'a, Metadata>,
-) -> SpecificTopicReader<&'a MetadataTopic> {
+pub fn new(
+    _: SpecificTopicReader<Metadata>,
+) -> SpecificTopicReader<&MetadataTopic> {
     /*    let topic_name_supplier = || topic_name.clone();
         let topic = m! {
                 metadata <- ResultT::lift(self.fetch_metadata_for(topic_name_supplier()));
@@ -19,7 +19,7 @@ pub fn new<'a>(
                 })
             };
     */
-    SpecificTopicReader::new(move |c| {
+    SpecificTopicReader::new(move |_| {
         TimeoutAwareKafkaReader::unit(Result::Err(K4fqError::NotSupported))
     })
 }

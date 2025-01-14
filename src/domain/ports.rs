@@ -1,13 +1,12 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use rayon::iter::ParallelIterator;
 use shaku::Interface;
 
-use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4fqError, QueryRange, Topic, TopicsMatcherType};
 use crate::domain::model::Progress;
 use crate::domain::model::Record;
 use crate::domain::model::TopicName;
+use crate::domain::model::{ApplicationProperties, Command, Count, EstimatedQueryRange, K4fqError, QueryRange, Topic, TopicsMatcherType};
 
 pub trait RecordFinder: Interface {
     fn find_by<'a>(&self, topic_name: &'a TopicName) -> Box<dyn Iterator<Item=Record> + Sync + Send>;
